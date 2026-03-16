@@ -1,0 +1,11 @@
+# Clean Gemini judge — no skills, no extensions, no memory, no system prompt
+FROM python:3.13-slim
+
+WORKDIR /app
+
+RUN pip install --no-cache-dir google-genai python-dotenv pandas
+
+COPY judge.py config.py api_clients.py ./
+RUN mkdir -p data
+
+ENTRYPOINT ["python", "judge.py"]

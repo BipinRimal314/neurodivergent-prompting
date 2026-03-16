@@ -5,6 +5,8 @@ __pycache__/
 *.pyc
 ROADMAP.md
 LITERATURE.md
+qualitative-analysis.md
+outreach/
 paper/*.aux
 paper/*.log
 paper/*.out

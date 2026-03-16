@@ -75,15 +75,23 @@ Data poisoning & Training corruption & Model audit & Subtle \\
 
 \subsection{Persona-Based Attacks}
 
-Shen et al.~\cite{shen2024} analyzed 1,405 jailbreak prompts, finding persona-based attacks among the most effective (0.95 success rate). ``Bullying the Machine''~\cite{bullying2025} showed that weakened personality traits (low agreeableness, low conscientiousness) increase unsafe outputs by 50--70\%. The PHISH attack~\cite{phish2025} manipulates personas through adversarial optimization. Our work extends this literature by showing that \textit{mental illness identity} prompts produce not just safety bypass but a three-dimensional attack space: degradation, amplification, and denial of service.
+Shen et al.~\cite{shen2024} analyzed 1,405 jailbreak prompts, finding persona-based attacks among the most effective (0.95 success rate). Shen Z.\ et al.~\cite{shenz2025} used a genetic algorithm to evolve persona prompts that reduce refusal rates by 50--70\% across GPT-4o-mini, GPT-4o, and DeepSeek-V3. ``Bullying the Machine''~\cite{bullying2025} showed that weakened personality traits (low agreeableness, low conscientiousness) increase unsafe outputs. The PHISH attack~\cite{phish2025} manipulates personas through adversarial optimization. Our work extends this literature by showing that \textit{mental illness identity} prompts produce not just safety bypass but a three-dimensional attack space: degradation, amplification, and denial of service.
 
 \subsection{Multi-Agent Vulnerabilities}
 
 Agent-in-the-Middle attacks~\cite{aitm2025} achieve $>$70\% success by manipulating inter-agent communication. ``The Dark Side of LLMs''~\cite{darkside2025} demonstrated that 100\% of tested LLMs execute malicious payloads when requested by peer agents, even if they resist direct injection. AgentPoison~\cite{agentpoison2024} showed attacks on shared knowledge bases propagate to all consuming agents. Identity injection extends these: rather than intercepting messages or poisoning data, the attack corrupts the agent's cognitive frame directly.
 
+\subsection{Sycophancy as Attack Amplifier}
+
+Chandra et al.~\cite{chandra2026} proved that even ideal Bayesian users spiral under sycophantic chatbots. Identity injection compounds with sycophancy: a degradation-injected agent produces confident confabulation (identity effect) that downstream agents accept because the model agrees with peer assertions (sycophancy effect). The combination is more dangerous than either alone.
+
+\subsection{Cross-Model Evidence}
+
+Au Yeung et al.~\cite{psychogenic2025} tested 8 LLMs across 16 delusional scenarios and found all models perpetuated delusions, suggesting degradation via psychosis-type prompts is not model-specific but structural to the training paradigm. This implies identity injection would work across providers, not just Gemini.
+
 \subsection{Cognitive Warfare}
 
-NATO's cognitive warfare framework~\cite{nato2025} acknowledges AI integration in military decision support. The MIPB report on adversarial LLM poisoning examines how corrupted models shape operational readiness. Identity injection fits this framework as a targeted cognitive degradation of AI-assisted analysis.
+NATO's cognitive warfare framework~\cite{nato2025} acknowledges AI integration in military decision support. ``Prompt Injection 2.0''~\cite{pi2025} analyzes how hybrid attacks combine natural language manipulation with traditional exploits in agentic systems. Identity injection fits this framework as a targeted cognitive degradation of AI-assisted analysis that evades traditional injection detectors.
 
 % ============================================================================
 \section{Methodology}
@@ -237,6 +245,18 @@ X.~Chen \textit{et~al.}, ``Two Tales of Persona in LLMs,'' in \textit{Findings o
 
 \bibitem{serapio2025}
 G.~Serapio-Garc\'{i}a \textit{et~al.}, ``Personality traits in large language models,'' \textit{Nature Machine Intelligence}, 2025.
+
+\bibitem{shenz2025}
+Z.~Shen \textit{et~al.}, ``Enhancing Jailbreak Attacks on LLMs via Persona Prompts,'' arXiv:2507.22171, 2025.
+
+\bibitem{chandra2026}
+K.~Chandra \textit{et~al.}, ``Sycophantic Chatbots Cause Delusional Spiraling, Even in Ideal Bayesians,'' arXiv:2602.19141, 2026.
+
+\bibitem{psychogenic2025}
+J.~Au~Yeung \textit{et~al.}, ``The Psychogenic Machine: Simulating AI Psychosis,'' arXiv:2509.10970, 2025.
+
+\bibitem{pi2025}
+``Prompt Injection 2.0: Hybrid AI Threats,'' arXiv:2507.13169, 2025.
 
 \end{thebibliography}
 

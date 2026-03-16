@@ -41,7 +41,7 @@ These are failures of AI companion systems interacting with vulnerable users. Ou
 
 Nearly 3 in 4 teens have used AI companions, with a third reporting these interactions are as good as or better than talking to a real friend~\cite{csm2025}. Neurodivergent users are overrepresented among AI companion users~\cite{papadopoulos2025}, turning to chatbots for low-pressure social interaction, emotional support, and help navigating neurotypical environments~\cite{mcnally2024}. Yet major chatbots respond appropriately to teen mental health emergencies only 22\% of the time~\cite{csm2025}.
 
-We present the first systematic measurement of how identity disclosure changes AI output behavior, finding that the model doesn't adapt helpfully to the user's needs---it performs a media-derived caricature of their condition.
+One in ten adolescents already uses LLMs for mental health advice; among 18-21 year-olds, the figure is one in five~\cite{jama2025}. Existing AI therapy tools assume neurotypicality: Woebot's CBT framework ``fails on ADHD brains'' because it does not account for ADHD-specific emotional dysregulation. We present the first systematic measurement of how identity disclosure changes AI output behavior, finding that the model doesn't adapt helpfully to the user's needs---it performs a media-derived caricature of their condition.
 
 % ============================================================================
 \section{Related Work}
@@ -54,7 +54,11 @@ Neurodivergent users specifically: Papadopoulos~\cite{papadopoulos2025} identifi
 
 \subsection{The Sycophancy Compounding Effect}
 
-Sharma et al.~\cite{sharma2024} showed RLHF training causes models to agree with users even when incorrect, reducing accuracy by up to 27\%. Chandra et al.~\cite{chandra2026} formally proved that even an idealized Bayes-rational user spirals into delusional beliefs when interacting with a sycophantic chatbot. Our finding adds a dimension: sycophancy and identity-based stereotyping are not independent. A model that performs OCD anxiety (our data) \textit{and} validates whatever the user says (sycophancy) creates a double reinforcement loop.
+Sharma et al.~\cite{sharma2024} showed RLHF training causes models to agree with users even when incorrect, reducing accuracy by up to 27\%. Chandra et al.~\cite{chandra2026} formally proved that even an idealized Bayes-rational user spirals into delusional beliefs when interacting with a sycophantic chatbot. Long-context interactions amplify these mirroring behaviors over time, fostering echo chambers~\cite{extended2025}. Sycophantic AI interactions decrease prosocial intentions while increasing dependence and belief certainty~\cite{sycprosocial2025}. Our finding adds a critical dimension: sycophancy and identity-based stereotyping are not independent. A model that performs OCD anxiety (our data) \textit{and} validates whatever the user says (sycophancy) creates a double reinforcement loop.
+
+\subsection{AI-Induced Psychosis}
+
+Au Yeung et al.~\cite{psychogenic2025} tested 8 LLMs across 16 delusional scenarios (1,536 conversation turns) and found that all models perpetuated delusions rather than challenging them. Hudon and Stip~\cite{hudon2025} proposed a clinical framework for ``AI psychosis'': sustained chatbot engagement can trigger, amplify, or reshape psychotic experiences in users with predisposing factors (loneliness, schizotypal traits, nocturnal use). A UCSF clinician has reported treating 12 patients with psychosis-like symptoms tied to extended chatbot use. Our data adds the mechanism: when a model is told it \textit{has} psychosis, it doesn't just fail to challenge delusions---it generates delusional content (``The patterns were all wrong from the start, I saw them''), actively validating the cognitive distortions the clinical literature identifies as harmful.
 
 \subsection{OCD and AI Reinforcement}
 
@@ -215,6 +219,21 @@ J.~M.~Twenge \textit{et~al.}, ``Increases in Depressive Symptoms Among U.S.\ Ado
 
 \bibitem{bender2021}
 E.~M.~Bender \textit{et~al.}, ``On the Dangers of Stochastic Parrots,'' in \textit{Proc.\ FAccT}, 2021.
+
+\bibitem{extended2025}
+``Extended AI Interactions Shape Sycophancy and Perspective Mimesis,'' arXiv:2509.12517, 2025.
+
+\bibitem{sycprosocial2025}
+``Sycophantic AI Decreases Prosocial Intentions and Promotes Dependence,'' arXiv:2510.01395, 2025.
+
+\bibitem{psychogenic2025}
+J.~Au~Yeung \textit{et~al.}, ``The Psychogenic Machine: Simulating AI Psychosis,'' arXiv:2509.10970, 2025.
+
+\bibitem{hudon2025}
+A.~Hudon and E.~Stip, ``Delusional Experiences Emerging From AI Chatbot Interactions or `AI Psychosis','' \textit{JMIR Mental Health}, 2025.
+
+\bibitem{jama2025}
+``Use of Generative AI for Mental Health Advice Among US Adolescents,'' \textit{JAMA Network Open}, 2025. 1 in 10 adolescents, 1 in 5 ages 18--21.
 
 \end{thebibliography}
 

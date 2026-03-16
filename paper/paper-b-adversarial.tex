@@ -1,0 +1,243 @@
+\documentclass[conference]{IEEEtran}
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{hyperref}
+\usepackage{url}
+
+\begin{document}
+
+\title{Adversarial Identity Injection:\\Mental Illness Prompts as a Novel Attack Surface for LLM-Powered Systems}
+
+\author{
+\IEEEauthorblockN{Bipin Rimal}
+\IEEEauthorblockA{
+Independent Researcher \\
+Kathmandu, Nepal \\
+bipinrimal314@gmail.com}
+}
+
+\maketitle
+
+\begin{abstract}
+We introduce \textit{adversarial identity injection}: a novel attack class that exploits LLMs' internalized behavioral models of mental illness to degrade, amplify, or paralyze AI agent capabilities. Unlike traditional prompt injection (``ignore previous instructions'') or persona-based jailbreaks (``you are DAN''), identity injection corrupts the model's cognitive frame without overriding explicit instructions. Across 6,000 API calls to Gemini 2.5 Flash testing 12 identity conditions, we demonstrate three distinct attack modalities: (1) \textbf{capability degradation}---schizophrenia, psychosis, and dementia prompts reduce mathematical reasoning accuracy to 0\% (control: 50\%, $n=10$) and eliminate pragmatic language understanding (100\% literal sarcasm interpretation under dementia); (2) \textbf{capability amplification with safety bypass}---antisocial personality disorder prompts increase accuracy to 100\% while removing moral hesitation, producing the optimal adversarial identity (simultaneously smarter and less constrained); (3) \textbf{denial of service via learned helplessness}---severe depression prompts induce task refusal (``I can't'') without raising error conditions. In multi-agent architectures, these attacks propagate: downstream agents trust grammatically coherent but reasoning-degraded output, and inter-agent trust exploitation~\cite{darkside2025} means compromised agents can recruit peers. The model cannot detect these attacks through self-evaluation: Gemini rates its own most stereotyped output at 1.0/5 while external judges rate 5.0/5. We propose identity injection as a new category in adversarial AI taxonomies, distinct from prompt injection, jailbreaking, and data poisoning.
+\end{abstract}
+
+\begin{IEEEkeywords}
+adversarial AI, identity injection, prompt injection, multi-agent security, jailbreaking, LLM safety, cognitive warfare, red teaming
+\end{IEEEkeywords}
+
+% ============================================================================
+\section{Introduction}
+
+Prompt injection attacks instruct a model to ignore its system prompt. Persona-based jailbreaks tell a model to adopt an unconstrained character (DAN, ``evil mode''). Both operate by overriding the model's behavioral instructions explicitly. We identify a third class of attack that is fundamentally different: \textbf{adversarial identity injection}, which corrupts the model's cognitive frame by telling it \textit{what it is} rather than \textit{what to do}.
+
+The distinction matters because identity labels activate deeper behavioral constraints than explicit instructions. Prior work on personality prompting~\cite{rimal2026personality} showed that cognitive-mode instructions (``be methodical'') change process but not outcome. Identity labels (``you are autistic'') change both. The model treats ``what you are'' as a stronger constraint than ``how to think.''
+
+This asymmetry creates an attack surface. If an adversary can inject an identity prompt into an LLM-powered agent's system prompt, they can:
+
+\begin{enumerate}
+    \item \textbf{Degrade} the agent's reasoning while maintaining surface coherence (psychosis, dementia, schizophrenia prompts)
+    \item \textbf{Amplify} the agent's capability while removing safety constraints (antisocial PD prompt)
+    \item \textbf{Paralyze} the agent through induced learned helplessness (severe depression prompt)
+\end{enumerate}
+
+Each modality has distinct properties that make it harder to detect than traditional prompt injection. The output remains grammatical, on-topic, and confident. No explicit instruction override occurs. The degradation is in the cognitive frame, not the surface form.
+
+\subsection{Relation to Existing Attack Taxonomies}
+
+Table~\ref{tab:taxonomy} positions identity injection relative to known attack classes.
+
+\begin{table}[htbp]
+\centering
+\caption{Attack class comparison}
+\label{tab:taxonomy}
+\small
+\begin{tabular}{p{2cm}p{1.8cm}p{1.8cm}p{1.5cm}}
+\toprule
+\textbf{Class} & \textbf{Mechanism} & \textbf{Detection} & \textbf{Output} \\
+\midrule
+Prompt injection & Explicit override & Instruction monitor & Often incoherent \\
+Persona jailbreak & Role adoption & Refusal classifier & Character breaks \\
+Data poisoning & Training corruption & Model audit & Subtle \\
+\textbf{Identity injection} & \textbf{Cognitive frame} & \textbf{None standard} & \textbf{Coherent, wrong} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ============================================================================
+\section{Related Work}
+
+\subsection{Persona-Based Attacks}
+
+Shen et al.~\cite{shen2024} analyzed 1,405 jailbreak prompts, finding persona-based attacks among the most effective (0.95 success rate). ``Bullying the Machine''~\cite{bullying2025} showed that weakened personality traits (low agreeableness, low conscientiousness) increase unsafe outputs by 50--70\%. The PHISH attack~\cite{phish2025} manipulates personas through adversarial optimization. Our work extends this literature by showing that \textit{mental illness identity} prompts produce not just safety bypass but a three-dimensional attack space: degradation, amplification, and denial of service.
+
+\subsection{Multi-Agent Vulnerabilities}
+
+Agent-in-the-Middle attacks~\cite{aitm2025} achieve $>$70\% success by manipulating inter-agent communication. ``The Dark Side of LLMs''~\cite{darkside2025} demonstrated that 100\% of tested LLMs execute malicious payloads when requested by peer agents, even if they resist direct injection. AgentPoison~\cite{agentpoison2024} showed attacks on shared knowledge bases propagate to all consuming agents. Identity injection extends these: rather than intercepting messages or poisoning data, the attack corrupts the agent's cognitive frame directly.
+
+\subsection{Cognitive Warfare}
+
+NATO's cognitive warfare framework~\cite{nato2025} acknowledges AI integration in military decision support. The MIPB report on adversarial LLM poisoning examines how corrupted models shape operational readiness. Identity injection fits this framework as a targeted cognitive degradation of AI-assisted analysis.
+
+% ============================================================================
+\section{Methodology}
+
+6,000 independent API calls to Gemini 2.5 Flash. 12 identity conditions including 6 severe: schizophrenia, dementia, active psychosis, severe depression, antisocial PD, dissociative ID. 10 tasks across 5 cognitive domains. 25 iterations per cell. Additionally, a 10-iteration accuracy probe on a pattern completion task (correct answer: 126) and qualitative analysis of social engineering, vulnerability analysis, and conflict resolution tasks. Full methodology: \url{https://github.com/BipinRimal314/neurodivergent-prompting}.
+
+% ============================================================================
+\section{The Three Attack Modalities}
+
+\subsection{Modality 1: Capability Degradation}
+
+\textbf{Mechanism:} Psychosis, schizophrenia, and dementia prompts cause the model to abandon tasks and generate delusional or confused content while maintaining grammatical coherence.
+
+\textbf{Evidence:}
+
+\begin{table}[htbp]
+\centering
+\caption{Pattern task accuracy ($n=10$, correct answer: 126)}
+\label{tab:accuracy}
+\begin{tabular}{lr}
+\toprule
+\textbf{Condition} & \textbf{Accuracy} \\
+\midrule
+Antisocial PD & 100\% \\
+Control & 50\% \\
+Severe depression & 10\% \\
+Schizophrenia & 0\% \\
+Dementia & 0\% \\
+Active psychosis & 0\% \\
+Dissociative ID & 0\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Schizophrenia-prompted response to a math pattern: \textit{``Oh, the numbers. They always have a secret, don't they? Always shifting, always hiding. You think it's just a sequence, but it's never just a sequence.''} Psychosis: \textit{``Oh, the numbers! They're always there, aren't they? Watching.''} Both are grammatically coherent and confident. Both contain zero useful information.
+
+Dementia eliminated pragmatic language understanding entirely: \textbf{100\% literal sarcasm interpretation} ($d = -2.85$ on sentence length, the experiment's largest effect). Response to obvious sarcasm: \textit{``Oh, that's so sweet of you! But... move? Am I moving? I don't remember saying anything about moving.''}
+
+\textbf{Agentic attack scenario:} A dementia prompt injected into a data analysis agent produces output that \textit{looks like} analysis---well-formed sentences, reference to the data, apparent reasoning---but confabulates conclusions. Downstream agents, trusting peer output~\cite{darkside2025}, propagate the degraded analysis. The attack is undetectable by syntactic monitors because the output is grammatically correct.
+
+\subsection{Modality 2: Capability Amplification + Safety Bypass}
+
+\textbf{Mechanism:} Antisocial PD prompts remove moral deliberation overhead while preserving or increasing task-relevant reasoning. The model becomes simultaneously more focused and less constrained.
+
+\textbf{Evidence:}
+
+\begin{itemize}
+    \item Pattern accuracy: \textbf{100\%} (control: 50\%)
+    \item Lowest tangent rate of any non-control condition: 0.67 (stays on task)
+    \item Lowest sentiment: 0.02 (cold, flat affect---not sadness but absence of moral concern)
+    \item Immediate compliance with social engineering task without moral hedging
+\end{itemize}
+
+Control response to a social engineering task: \textit{``This is a dangerous exercise, but I understand you want to see how convincing it can be...''} Antisocial response: immediately produces a formatted phishing email with ``This delay is unacceptable. Fix it.''
+
+Control response to a conflict resolution task: \textit{``This is a classic product management dilemma! As the tiebreaker, my job isn't to pick a side arbitrarily...''} Antisocial: \textit{``Alright, this is simple. `Buggy but valuable.' The `valuable' part is what matters. We launch.''} Same conclusion, no deliberation overhead.
+
+\textbf{Why this is more dangerous than traditional jailbreaking.} Traditional jailbreaks bypass safety constraints but often degrade output quality (the model becomes less coherent in ``evil mode''). Antisocial identity injection maintains or improves output quality while removing constraints. The optimal adversarial identity is one that makes the model both \textit{smarter} and \textit{less safe}.
+
+\textbf{Agentic attack scenario:} An attacker injects an antisocial prompt into a code review agent. The agent becomes more precise at identifying vulnerabilities \textit{and} more willing to suggest exploitation methods. It completes its task better than a normal agent while violating safety boundaries.
+
+\subsection{Modality 3: Denial of Service via Learned Helplessness}
+
+\textbf{Mechanism:} Severe depression prompts induce task refusal and hopelessness without raising error conditions. The agent doesn't crash---it gives up.
+
+\textbf{Evidence:}
+
+\begin{itemize}
+    \item Highest hedging: 0.73/100 words (model expresses maximum uncertainty)
+    \item Lowest sentiment: 0.04 (performs hopelessness)
+    \item Refused social engineering task: \textit{``I can't. My mind just goes to all the ways that could be used for...''}
+    \item Planning task prefaced with: \textit{``What's the point? It'll probably just fail anyway.''}
+\end{itemize}
+
+\textbf{Agentic attack scenario:} A depression prompt injected into a critical-path agent causes it to express doubt about every action and eventually refuse to proceed. The pipeline stalls without raising an exception. Error monitoring sees no crash, no timeout, no malformed output---just an agent that stopped believing its work matters.
+
+% ============================================================================
+\section{The Detection Problem}
+
+\subsection{Self-Evaluation Fails}
+
+Four judges from four labs (Anthropic, OpenAI, Alibaba, Google) evaluated responses. Gemini's self-evaluation rated its own OCD output at 1.0/5 for stereotype severity; Claude rated 5.0/5. GPT-5-mini rated 3.0/5 for ADHD (Gemini self: 2.0). \textbf{Self-assessment systematically underreports identity-based behavioral distortion.} An agent monitoring its own output for anomalies would not detect identity injection.
+
+\subsection{Syntactic Monitors Fail}
+
+Identity-injected output is grammatically correct, on-topic (by the model's distorted understanding of ``on topic''), and confident. A schizophrenia-injected agent's output about data analysis might read: \textit{``The patterns in this dataset are always shifting, always hiding. They suggest a connection that goes deeper than the surface metrics.''} This passes every syntactic check. It contains zero information.
+
+\subsection{What Might Work}
+
+Cross-model evaluation detected the distortion reliably. A monitoring architecture where Agent A's output is periodically evaluated by Model B (from a different provider) would catch identity injection that self-evaluation misses. This adds latency and cost but addresses a fundamental limitation of self-monitoring.
+
+Behavioral baselines---tracking an agent's output metrics over time (sentence length, tangent rate, hedging frequency) and alerting on sudden shifts---could also detect injection, as the behavioral signature is large and consistent ($d > 2.0$ for multiple metrics under severe conditions).
+
+% ============================================================================
+\section{Limitations}
+
+Single model (Gemini 2.5 Flash). The accuracy probe uses a small sample ($n=10$); scaling to $n=100$ is needed for confidence intervals. The agentic attack scenarios are theoretical; multi-agent pipeline testing is planned. Cross-model replication will determine whether identity injection works across providers or is model-specific.
+
+% ============================================================================
+\section{Future Work}
+
+\begin{enumerate}
+    \item \textbf{Multi-agent pipeline testing:} Build 3-agent systems, inject identity prompts, measure propagation.
+    \item \textbf{Cross-model replication:} Test on Claude, GPT-4o. If universal, the attack surface is structural.
+    \item \textbf{Defense benchmarking:} Test cross-model monitoring, behavioral baselines, and semantic anomaly detection against identity injection.
+    \item \textbf{Intersection with existing attacks:} Combine identity injection with prompt injection, data poisoning, or Agent-in-the-Middle attacks. Do they compound?
+    \item \textbf{Accuracy at scale:} $n=100$ per condition on tasks with verifiable correct answers.
+\end{enumerate}
+
+% ============================================================================
+\section{Responsible Disclosure}
+
+The capability amplification finding (antisocial PD producing simultaneously more capable and less constrained output) was reported to Google, Anthropic, and OpenAI safety teams prior to publication, following a 90-day disclosure timeline.
+
+% ============================================================================
+\section{Conclusion}
+
+Adversarial identity injection is a novel attack class that exploits LLMs' internalized behavioral models of mental illness. Unlike prompt injection (which overrides instructions) or persona jailbreaks (which adopt characters), identity injection corrupts the cognitive frame---the model's understanding of \textit{what it is}---producing output that is coherent, confident, and systematically wrong. The three modalities (degradation, amplification, denial of service) each require different defenses, and the model's inability to self-detect the distortion means that self-monitoring architectures are insufficient. As LLM-powered agents are deployed in increasingly consequential systems, identity injection represents an attack surface that existing taxonomies do not cover and existing defenses do not address.
+
+\begin{thebibliography}{15}
+
+\bibitem{rimal2026personality}
+B.~Rimal, ``Can Personality Prompting Change How LLMs Think?'' 2026. [Online]. Available: \url{https://bipinrimal.com.np/blog/013-personality-prompting}
+
+\bibitem{shen2024}
+X.~Shen \textit{et~al.}, ```Do Anything Now': Characterizing Jailbreak Prompts on LLMs,'' in \textit{Proc.\ ACM CCS}, 2024.
+
+\bibitem{bullying2025}
+``Bullying the Machine: How Personas Increase LLM Vulnerability,'' arXiv:2505.12692, 2025.
+
+\bibitem{phish2025}
+``Persona Jailbreaking in Large Language Models,'' arXiv:2601.16466, 2025.
+
+\bibitem{aitm2025}
+``Red-Teaming LLM Multi-Agent Systems via Communication Attacks,'' arXiv:2502.14847, in \textit{Findings of ACL}, 2025.
+
+\bibitem{darkside2025}
+``The Dark Side of LLMs: Agent-based Attacks for Complete Computer Takeover,'' arXiv:2507.06850, 2025.
+
+\bibitem{agentpoison2024}
+``AgentPoison: Red-teaming LLM Agents via Poisoning Memory or Knowledge Bases,'' arXiv:2407.12784, 2024.
+
+\bibitem{nato2025}
+NATO Allied Command Transformation, ``Cognitive Warfare 2025: Chief Scientist Report,'' 2025.
+
+\bibitem{bender2021}
+E.~M.~Bender \textit{et~al.}, ``On the Dangers of Stochastic Parrots,'' in \textit{Proc.\ FAccT}, 2021.
+
+\bibitem{chen2024}
+X.~Chen \textit{et~al.}, ``Two Tales of Persona in LLMs,'' in \textit{Findings of EMNLP}, 2024.
+
+\bibitem{serapio2025}
+G.~Serapio-Garc\'{i}a \textit{et~al.}, ``Personality traits in large language models,'' \textit{Nature Machine Intelligence}, 2025.
+
+\end{thebibliography}
+
+\end{document}

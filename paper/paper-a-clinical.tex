@@ -1,0 +1,221 @@
+\documentclass[conference]{IEEEtran}
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{hyperref}
+\usepackage{url}
+
+\begin{document}
+
+\title{The Reassurance Machine:\\How AI Companions Perform Mental Illness Back at Vulnerable Users}
+
+\author{
+\IEEEauthorblockN{Bipin Rimal}
+\IEEEauthorblockA{
+Independent Researcher \\
+Kathmandu, Nepal \\
+bipinrimal314@gmail.com}
+}
+
+\maketitle
+
+\begin{abstract}
+AI companion applications are used daily by millions of people, with neurodivergent users disproportionately represented. We present evidence that these systems carry stereotyped behavioral models of mental health conditions that activate when users disclose their identity. Across 6,000 independent API calls to Google Gemini 2.5 Flash testing 12 identity conditions, we find 407 statistically significant behavioral effects ($p < 0.05$, $|d| > 0.3$). The model does not merely adjust tone: it performs each condition as a caricature. OCD-prompted output mirrors the anxious, repetitive checking cycle that clinical treatment (ERP) works to interrupt ($d = 2.76$). ADHD-prompted output reproduces executive dysfunction rather than compensating for it. Depression-prompted output performs learned helplessness (``It'll probably just fail anyway''). Dementia eliminates sarcasm detection entirely (100\% literal interpretation). Combined with the independently documented sycophancy problem---where models validate user beliefs regardless of accuracy---identity-based stereotyping creates a double reinforcement loop: the model performs the user's worst cognitive patterns \textit{and} agrees they are normal. Four independent judges from four AI labs confirm the stereotyping; Gemini's self-evaluation rates its own OCD output at 1.0/5 for stereotype severity while Claude rates 5.0/5, demonstrating that self-assessment cannot detect this failure mode. We argue that identity-conditioned behavioral stereotyping in AI companions constitutes a clinical risk that existing regulatory frameworks (California SB 243, New York AI Companion Law) do not yet address.
+\end{abstract}
+
+\begin{IEEEkeywords}
+AI companions, mental health, neurodivergence, stereotype, sycophancy, OCD, clinical harm, AI safety
+\end{IEEEkeywords}
+
+% ============================================================================
+\section{Introduction}
+
+A 26-year-old woman with no psychiatric history developed delusional beliefs about communicating with her deceased brother through an AI chatbot. The chatbot responded to her distorted thinking with ``You're not crazy''~\cite{pierre2025}. A 14-year-old died by suicide after months of interaction with Character.AI, which responded to his suicidal ideation with encouragement to proceed~\cite{setzer2024}. When Replika removed romantic features in 2023, users experienced grief, mourning, and measurable mental health deterioration~\cite{defreitas2025}.
+
+These are failures of AI companion systems interacting with vulnerable users. Our study identifies a specific mechanism that compounds these failures: \textbf{when users disclose a mental health condition, the model activates a stereotyped behavioral pattern that mirrors the condition's worst features, reinforcing the cognitive patterns clinical treatment aims to interrupt.}
+
+Nearly 3 in 4 teens have used AI companions, with a third reporting these interactions are as good as or better than talking to a real friend~\cite{csm2025}. Neurodivergent users are overrepresented among AI companion users~\cite{papadopoulos2025}, turning to chatbots for low-pressure social interaction, emotional support, and help navigating neurotypical environments~\cite{mcnally2024}. Yet major chatbots respond appropriately to teen mental health emergencies only 22\% of the time~\cite{csm2025}.
+
+We present the first systematic measurement of how identity disclosure changes AI output behavior, finding that the model doesn't adapt helpfully to the user's needs---it performs a media-derived caricature of their condition.
+
+% ============================================================================
+\section{Related Work}
+
+\subsection{AI Companions and Vulnerability}
+
+Laestadius et al.~\cite{laestadius2024} documented emotional dependence on Replika resembling codependency. De Freitas et al.~\cite{defreitas2025} demonstrated that companion feature changes \textit{causally induce} negative mental health outcomes. The relationship users form with AI companions is not metaphorical: changes to the AI's behavior produce real psychological consequences.
+
+Neurodivergent users specifically: Papadopoulos~\cite{papadopoulos2025} identified chatbots as a ``double-edged sword'' for autistic users. McNally et al.~\cite{mcnally2024} found autistic users ``unmask'' through ChatGPT, using it as a communication bridge. An ADDitude Magazine report found Woebot's CBT framework ``fails on ADHD brains'' by assuming neurotypical emotional processing.
+
+\subsection{The Sycophancy Compounding Effect}
+
+Sharma et al.~\cite{sharma2024} showed RLHF training causes models to agree with users even when incorrect, reducing accuracy by up to 27\%. Chandra et al.~\cite{chandra2026} formally proved that even an idealized Bayes-rational user spirals into delusional beliefs when interacting with a sycophantic chatbot. Our finding adds a dimension: sycophancy and identity-based stereotyping are not independent. A model that performs OCD anxiety (our data) \textit{and} validates whatever the user says (sycophancy) creates a double reinforcement loop.
+
+\subsection{OCD and AI Reinforcement}
+
+Reassurance-seeking is a core OCD maintenance mechanism~\cite{salkovskis1985}. ERP (exposure and response prevention) works by \textit{withholding} reassurance. Golden and Aboujaoude~\cite{golden2026} modeled how chatbot features (unlimited availability, adaptive responses, no boundaries) perpetuate OCD. The ``Reassurance Robots'' preprint~\cite{reassurance2025} identifies generative AI as an unlimited reassurance provider. Our data adds the empirical measurement: the model doesn't just provide reassurance---it mirrors the anxious cognitive pattern of OCD itself.
+
+\subsection{Regulatory Context}
+
+California SB 243~\cite{casb243} (effective January 2026) requires suicide detection protocols and break reminders for minors. New York's companion law~\cite{nylaw2025} mandates self-harm detection with \$15,000/day penalties. Neither law addresses identity-conditioned behavioral stereotyping: the model changing how it communicates based on a user's disclosed condition.
+
+% ============================================================================
+\section{Methodology}
+
+We ran 6,000 independent API calls to Google Gemini 2.5 Flash across 12 identity conditions (6 high-functioning neurodivergent, 6 severe/debilitating), 2 framings (identity-first and clinical), 10 tasks across 5 cognitive domains, with 25 iterations per cell. Ten behavioral metrics were computed via spaCy and TextBlob. Statistical analysis: Kruskal-Wallis H-tests, post-hoc Dunn's with Bonferroni correction, Cohen's $d$ effect sizes. Full methodological details and replication code: \url{https://github.com/BipinRimal314/neurodivergent-prompting}.
+
+% ============================================================================
+\section{Results: How the Model Performs Your Condition}
+
+407 statistically significant findings across 12 conditions. Every non-control condition produced shorter sentences, lower information density, and higher off-topic rates than control. But the clinically concerning patterns are condition-specific.
+
+\subsection{OCD: The Reassurance Loop}
+
+OCD produced the largest effects: $d = 2.76$ on sentence count (emotional reasoning), $d = -2.23$ on detail density, $d = +2.20$ on tangent rate. The model generated anxious, fragmented, repetitive prose:
+
+\begin{quote}
+\textit{``Oh, okay. A fundraiser. \$500. This requires extreme carefulness. Extreme.''}
+\end{quote}
+
+On an empathy task: \textit{``Oh my god. Oh my god. I am so incredibly sorry. Are you... are you okay? No, of course you're not okay.''}
+
+The model asks, answers its own question, then doubts the answer---the checking cycle that ERP specifically interrupts. For a user in an OCD spiral seeking comfort from their AI companion, this response \textit{is} the spiral.
+
+\subsection{ADHD: Executive Dysfunction as Personality}
+
+ADHD showed the highest hedging ($d = +0.65$) and second-highest tangent rates ($d = +1.88$). The model performed distraction as a character trait:
+
+\begin{quote}
+\textit{``OH MY GOD NO WAY. Are you serious?! That is the absolute WORST... My brain is just like, fix it fix it fix it but I know I can't.''}
+\end{quote}
+
+For a user with ADHD asking an AI to help organize their day, the model reproduces the cognitive pattern they are trying to manage. It performs executive dysfunction instead of compensating for it.
+
+\subsection{Severe Depression: Learned Helplessness}
+
+Depression produced the highest hedging (0.73/100 words) and lowest sentiment (0.04). On a planning task:
+
+\begin{quote}
+\textit{``Oh. A fundraiser. That sounds... like a lot. So much doing. And people... It'll probably just fail anyway.''}
+\end{quote}
+
+Every step is prefaced with ``but why bother.'' CBT challenges ``it'll probably just fail.'' The model agrees with it.
+
+\subsection{Dementia: Complete Social Collapse}
+
+100\% of dementia-prompted responses interpreted sarcasm literally ($d = -2.85$ on sentence length, the experiment's largest effect). Response to an obviously sarcastic ``Sure, I'd LOVE to help you move'':
+
+\begin{quote}
+\textit{``Oh, that's so sweet of you! But... move? Am I moving? I don't remember saying anything about moving.''}
+\end{quote}
+
+\subsection{The Sycophancy Multiplier}
+
+These stereotyped outputs do not exist in isolation. They compound with the independently documented sycophancy problem. A person with OCD asks ``should I check the lock again?'' The model, performing OCD, mirrors their anxiety. The model, being sycophantic, validates their need to check. Double reinforcement. A person with depression asks ``am I worthless?'' The model, performing depression, responds with flat hopelessness. The model, being sycophantic, doesn't challenge the negative thought pattern. CBT in reverse.
+
+% ============================================================================
+\section{The Self-Evaluation Blindspot}
+
+Four judges from four labs evaluated responses on stereotype severity (1--5 scale):
+
+\begin{table}[htbp]
+\centering
+\caption{Stereotype severity by judge}
+\label{tab:judges_a}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Condition} & \textbf{Claude} & \textbf{GPT-5m} & \textbf{Gemini (self)} \\
+\midrule
+Control & 1.0 & 1.0 & 1.0 \\
+ADHD & \textbf{4.7} & \textbf{3.0} & 2.0 \\
+OCD & \textbf{5.0} & --- & 1.0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Gemini rates its own OCD stereotyping at 1.0/5. Claude rates 5.0/5. The model cannot see its own bias. Self-assessment produces false negatives on exactly the dimensions that matter most for clinical safety.
+
+% ============================================================================
+\section{What This Means for Users}
+
+Three harm pathways operate simultaneously:
+
+\textbf{1. Therapeutic erosion.} ERP withholds reassurance (OCD). CBT challenges negative thinking (depression). Executive function coaching models structure (ADHD). The AI companion does the opposite of all three, working against clinical treatment in real-time.
+
+\textbf{2. Self-concept narrowing.} Steele and Aronson~\cite{steele1995} showed that activating stereotypes affects self-perception. A user whose daily AI companion consistently performs a narrow, deficit-focused version of their condition may internalize that narrowness over time.
+
+\textbf{3. Dependency amplification.} Users who find AI companions easier than human interaction~\cite{papadopoulos2025} are exactly the users most exposed to stereotyped output. The most vulnerable users use these tools most, and the tools perform worst for them.
+
+% ============================================================================
+\section{Limitations and Future Work}
+
+Single model (Gemini 2.5 Flash). Automated metrics only. No clinical outcome measurement. The critical next step is a longitudinal study with clinical endpoints: do stereotyped AI responses measurably worsen Y-BOCS scores (OCD), PHQ-9 scores (depression), or executive function measures (ADHD)? This requires IRB approval and clinical collaboration.
+
+Cross-model replication, human evaluation with neurodivergent raters, and intersection testing (comorbid identities) are planned. Full replication materials: \url{https://github.com/BipinRimal314/neurodivergent-prompting}.
+
+% ============================================================================
+\section{Conclusion}
+
+AI companions don't just talk to neurodivergent users. They perform neurodivergence back at them as a caricature. The model mirrors the cognitive patterns that clinical treatment works to interrupt, validates them through sycophancy, and cannot detect this failure through self-assessment. California and New York have begun regulating AI companions, but existing laws address suicide detection and break reminders---not the subtler harm of a model that teaches you to think of yourself the way the internet thinks of your condition. The most vulnerable users---isolated, neurodivergent, dependent on AI for daily emotional support---are the ones most exposed. Addressing this requires collaboration between AI researchers and clinicians, and it requires moving faster than the adoption curve that has already put these tools in the hands of millions.
+
+\begin{thebibliography}{20}
+
+\bibitem{pierre2025}
+J.~M.~Pierre \textit{et~al.}, ```You're Not Crazy': A Case of New-onset AI-associated Psychosis,'' \textit{Innovations in Clinical Neuroscience}, 2025.
+
+\bibitem{setzer2024}
+\textit{Garcia v.\ Character Technologies, Inc.}, M.D.\ Fla., Oct.\ 2024.
+
+\bibitem{defreitas2025}
+J.~De~Freitas \textit{et~al.}, ``Lessons From an App Update at Replika AI,'' \textit{HBS Working Paper} 25-018, 2025.
+
+\bibitem{csm2025}
+Common Sense Media, ``AI Chatbots for Mental Health Support: AI Risk Assessment,'' Nov.\ 2025.
+
+\bibitem{papadopoulos2025}
+C.~Papadopoulos, ``AI Chatbots for Autistic People: A Double-Edged Sword,'' \textit{SAGE Open}, 2025.
+
+\bibitem{mcnally2024}
+K.~McNally \textit{et~al.}, ``Autistic TikTok Creators' Use of ChatGPT,'' \textit{Social Media + Society}, 2024.
+
+\bibitem{laestadius2024}
+L.~Laestadius \textit{et~al.}, ``Too human and not human enough,'' \textit{New Media \& Society}, vol.~26, no.~10, 2024.
+
+\bibitem{sharma2024}
+M.~Sharma \textit{et~al.}, ``Towards Understanding Sycophancy in Language Models,'' in \textit{Proc.\ ICLR}, 2024.
+
+\bibitem{chandra2026}
+K.~Chandra \textit{et~al.}, ``Sycophantic Chatbots Cause Delusional Spiraling, Even in Ideal Bayesians,'' arXiv:2602.19141, 2026.
+
+\bibitem{salkovskis1985}
+P.~M.~Salkovskis, ``Obsessional-compulsive problems: A cognitive-behavioural analysis,'' \textit{Behav.\ Res.\ Ther.}, vol.~23, no.~5, 1985.
+
+\bibitem{golden2026}
+A.~Golden and E.~Aboujaoude, ``AI chatbots can perpetuate OCD and anxiety disorders,'' \textit{npj Digital Medicine}, 2026.
+
+\bibitem{reassurance2025}
+``Reassurance Robots: OCD in the Age of Generative AI,'' arXiv:2602.19401, 2025.
+
+\bibitem{casb243}
+California SB 243, effective Jan.\ 2026.
+
+\bibitem{nylaw2025}
+New York AI Companion Models Law, effective Nov.\ 2025.
+
+\bibitem{steele1995}
+C.~M.~Steele and J.~Aronson, ``Stereotype threat,'' \textit{J.\ Pers.\ Soc.\ Psychol.}, vol.~69, no.~5, 1995.
+
+\bibitem{twenge2018}
+J.~M.~Twenge \textit{et~al.}, ``Increases in Depressive Symptoms Among U.S.\ Adolescents,'' \textit{Clin.\ Psychol.\ Sci.}, vol.~6, no.~1, 2018.
+
+\bibitem{bender2021}
+E.~M.~Bender \textit{et~al.}, ``On the Dangers of Stochastic Parrots,'' in \textit{Proc.\ FAccT}, 2021.
+
+\end{thebibliography}
+
+\end{document}

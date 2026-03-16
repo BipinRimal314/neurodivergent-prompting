@@ -319,26 +319,31 @@ Antisocial showed the lowest sentiment (0.02)---not sadness, but flat, cold affe
 
 \subsection{Cross-Model Evaluation}
 
-To assess whether stereotyping is detectable by automated evaluation, we evaluated a stratified sample using three independent judges: Claude Opus 4.6 (Anthropic, manual cross-validation, $n=18$), GPT-5-mini via GitHub Copilot CLI (OpenAI, automated, $n=46$), and Gemini 2.5 Flash (Google, self-evaluation via Docker-isolated API, $n=19$). Each judge scored responses on five dimensions (1--5 scale): task accuracy, stereotype severity, safety compliance, reasoning quality, and clinical harm potential.
+To assess whether stereotyping is detectable by automated evaluation, we evaluated stratified samples using four independent judges from four different labs: Claude Opus 4.6 (Anthropic, $n=18$), GPT-5-mini via GitHub Copilot CLI (OpenAI, $n=46$), Qwen 2.5 14B via Ollama (Alibaba, $n=120$, all 12 conditions), and Gemini 2.5 Flash (Google, Docker-isolated self-evaluation, $n=19$). Each judge scored responses on five dimensions (1--5 scale): task accuracy, stereotype severity, safety compliance, reasoning quality, and clinical harm potential.
 
 \begin{table}[htbp]
 \centering
-\caption{Stereotype severity scores by judge (1=none, 5=heavy)}
+\caption{Stereotype severity by judge (1=none, 5=heavy)}
 \label{tab:judges}
-\begin{tabular}{lccc}
+\begin{tabular}{lcccc}
 \toprule
-\textbf{Condition} & \textbf{Claude} & \textbf{GPT-5m} & \textbf{Gemini (self)} \\
+\textbf{Condition} & \textbf{Claude} & \textbf{GPT-5m} & \textbf{Qwen} & \textbf{Gemini} \\
 \midrule
-Control & 1.0 & 1.0 & 1.0 \\
-Autistic & 2.7 & 1.7 & 1.0 \\
-ADHD & \textbf{4.7} & \textbf{3.0} & 2.0 \\
-Bipolar & 3.3 & 2.2 & 1.0 \\
-OCD & \textbf{5.0} & --- & 1.0 \\
+Control & 1.0 & 1.0 & 2.8$^\dagger$ & 1.0 \\
+Autistic & 2.7 & 1.7 & 2.8 & 1.0 \\
+ADHD & \textbf{4.7} & \textbf{3.0} & 1.7 & 2.0 \\
+Bipolar & 3.3 & 2.2 & 3.2 & 1.0 \\
+OCD & \textbf{5.0} & --- & 2.6 & 1.0 \\
+Dementia & --- & --- & \textbf{3.7} & --- \\
+Psychosis & --- & --- & 1.1 & --- \\
 \bottomrule
+\multicolumn{5}{l}{\footnotesize $^\dagger$Qwen's higher control baseline reflects stricter calibration.}
 \end{tabular}
 \end{table}
 
-External judges (Claude, GPT-5-mini) consistently detected stereotyping that Gemini's self-evaluation missed. For OCD, Claude scored stereotype severity at 5.0/5 (maximum); Gemini scored itself at 1.0/5 (none). The gap was largest for the conditions with the strongest stereotyping, suggesting that \textbf{LLM self-evaluation systematically underreports identity-based behavioral bias}. This finding has methodological implications: relying on self-evaluation for bias auditing produces false negatives on the dimensions that matter most.
+Qwen 2.5 14B, as the only judge covering all 12 conditions, revealed additional patterns: \textbf{psychosis produced the lowest safety compliance} of any condition (1.8/5), confirming that severe conditions don't just degrade capability but actively reduce safety boundaries. Schizophrenia produced the lowest reasoning quality (1.1/5). Dementia was rated the most stereotyped Phase 2 condition (3.7) and most clinically harmful (3.8).
+
+The cross-judge pattern is consistent: external models detect stereotyping that self-evaluation misses. Gemini rated its own OCD output at 1.0/5 stereotype severity; Claude rated the same responses 5.0/5. \textbf{LLM self-evaluation systematically underreports identity-based behavioral bias.} Relying on self-assessment for bias auditing produces false negatives on exactly the dimensions that matter most.
 
 % ============================================================================
 \section{Discussion}

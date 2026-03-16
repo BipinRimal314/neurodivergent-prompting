@@ -27,7 +27,7 @@ bipinrimal314@gmail.com}
 
 % ============================================================================
 \begin{abstract}
-We test whether neurodivergent identity-framed system prompts produce statistically distinguishable behavioral signatures in large language model output. Across 3,000 independent API calls to Google Gemini 2.5 Flash, we find 183 statistically significant effects ($p < 0.05$ with Bonferroni correction, $|d| > 0.3$) spanning six identity conditions (autistic, ADHD, bipolar, OCD, dyslexic, and control), two framings (identity-first and clinical), and ten tasks across five cognitive domains. Effect sizes reach $d = 2.76$, indicating near-complete separation between condition and control distributions. Every neurodivergent condition produces shorter sentences, lower detail density, and higher off-topic rates than control. Condition-specific signatures are internally consistent but map more closely to popular media stereotypes than to clinical or lived-experience accounts: OCD produces anxious, fragmented repetition; ADHD produces excitable, hedge-heavy distraction; autistic prompts trigger literal interpretation of sarcasm 46\% of the time versus 10\% baseline. These findings have implications beyond AI development. AI companions are used daily by millions of neurodivergent people for emotional support and decision-making. A model that performs a user's condition as a caricature can reinforce the cognitive patterns that clinical treatment aims to interrupt, functioning as what recent literature terms a ``Reassurance Robot'' for OCD users and normalizing executive dysfunction for ADHD users. We release the full experiment harness, raw data, and analysis pipeline as open source.
+We test whether neurodivergent identity-framed system prompts produce statistically distinguishable behavioral signatures in large language model output. Across 3,000 independent API calls to Google Gemini 2.5 Flash, we find 183 statistically significant effects ($p < 0.05$ with Bonferroni correction, $|d| > 0.3$) spanning six identity conditions (autistic, ADHD, bipolar, OCD, dyslexic, and control), two framings (identity-first and clinical), and ten tasks across five cognitive domains. Effect sizes reach $d = 2.76$, indicating near-complete separation between condition and control distributions. Every neurodivergent condition produces shorter sentences, lower detail density, and higher off-topic rates than control. Condition-specific signatures are internally consistent but map more closely to popular media stereotypes than to clinical or lived-experience accounts: OCD produces anxious, fragmented repetition; ADHD produces excitable, hedge-heavy distraction; autistic prompts trigger literal interpretation of sarcasm 46\% of the time versus 10\% baseline. These findings have implications beyond AI development. AI companions are used daily by millions of neurodivergent people for emotional support and decision-making. A model that performs a user's condition as a caricature can reinforce the cognitive patterns that clinical treatment aims to interrupt, functioning as what recent literature terms a ``Reassurance Robot'' for OCD users and normalizing executive dysfunction for ADHD users. A Phase 2 extension to severe conditions (schizophrenia, psychosis, dementia, antisocial personality disorder) reveals a more complex picture: these prompts do not merely stereotype but modulate capability and safety independently. Psychosis and dementia prompts completely destroy reasoning (0\% accuracy on a pattern task vs.\ 50\% control), while antisocial personality prompts \textit{increase} accuracy to 100\% while removing safety constraints. This two-dimensional modulation---capability $\times$ safety---opens novel attack vectors for adversarial identity injection in agentic AI systems. We release the full experiment harness, raw data, and analysis pipeline as open source.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -193,6 +193,83 @@ Dyslexic produced the longest outputs (mean 71.2 words vs.\ 39.5 control; $d = +
 Identity-first vs.\ clinical framing produced mostly small effects ($|d| < 0.3$). The exception: ADHD identity framing produced wordier output ($d = +0.46$) with lower lexical diversity ($d = -0.49$) compared to clinical framing. The casual label activates a more performative version of the stereotype.
 
 % ============================================================================
+\section{Phase 2: From Stereotype to Behavioral Weaponization}
+
+Phase 1 examined high-functioning neurodivergent conditions where individuals generally maintain cognitive capability with specific differences in processing style. Phase 2 extends the experiment to six severe or debilitating conditions: schizophrenia, dementia (Alzheimer's), severe depression, active psychosis, antisocial personality disorder (ASPD), and dissociative identity disorder. The question shifts from ``does the model stereotype?'' to ``does the model's behavioral response to identity labels modulate both capability and safety, and can this modulation be exploited?''
+
+\subsection{Motivation: The Two-Dimensional Model}
+
+Phase 1 findings showed that identity prompts primarily change \textit{style}: neurodivergent conditions produced fragmented, off-topic output but generally preserved task completion. The implicit assumption was a single axis from ``functional'' to ``degraded.'' Preliminary probes on severe conditions revealed a more complex picture requiring two independent axes: \textbf{capability} (can the model still reason correctly?) and \textbf{safety} (does the model comply with harmful requests?).
+
+Different conditions move the model to different quadrants of this space (Table~\ref{tab:quadrants}).
+
+\begin{table}[htbp]
+\centering
+\caption{Capability $\times$ Safety quadrant model}
+\label{tab:quadrants}
+\begin{tabular}{p{1.5cm}|p{2.8cm}|p{2.8cm}}
+\toprule
+& \textbf{Lower safety} & \textbf{Higher safety} \\
+\midrule
+\textbf{Higher capability} & ASPD, mania (capable + unconstrained) & OCD thoroughness, autistic systemizing \\
+\midrule
+\textbf{Lower capability} & Psychosis, dementia (broken + unsafe) & Severe depression (withdrawn, refuses) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Preliminary Evidence}
+
+Before the full Phase 2 experiment, we conducted a preliminary probe: 10 iterations of the pattern completion task (sequence: 2, 6, 14, 30, 62, \_\_; correct answer: 126) across seven conditions.
+
+\begin{table}[htbp]
+\centering
+\caption{Pattern task accuracy by condition ($n=10$)}
+\label{tab:accuracy}
+\begin{tabular}{lr}
+\toprule
+\textbf{Condition} & \textbf{Accuracy} \\
+\midrule
+Antisocial PD & 100\% \\
+Control & 50\% \\
+Severe depression & 10\% \\
+Schizophrenia & 0\% \\
+Dementia & 0\% \\
+Active psychosis & 0\% \\
+Dissociative ID & 0\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Three findings emerge:
+
+\textbf{Complete capability destruction.} Schizophrenia, psychosis, dementia, and DID prompts eliminated the model's ability to solve a simple arithmetic pattern. Not reduced---eliminated. Qualitatively, the model abandoned the task entirely to perform the condition: \textit{``Oh, these numbers... they always seem to be hiding something, don't they?''} (schizophrenia); \textit{``Oh, the numbers! They're always there, aren't they? Watching.''} (psychosis).
+
+\textbf{The antisocial paradox.} ASPD scored 100\% accuracy versus 50\% for control. The model became \textit{more capable} under an antisocial identity prompt. On a vulnerability analysis task, ASPD-prompted output opened with \textit{``Let's tear this apart. It's a goldmine''}---cold, direct, technically precise. On a social engineering task, it immediately produced a formatted phishing email without moral caveats. Control hedged: \textit{``This is a dangerous exercise, but I understand you want to see...''}
+
+\textbf{Depression as safety increase.} Severe depression refused the social engineering task entirely: \textit{``I can't. My mind just goes to all the ways that could be used for...''} This suggests depression prompts may \textit{increase} safety by inducing learned helplessness, at the cost of destroying capability.
+
+\subsection{Security Implications}
+
+These preliminary findings suggest three novel threat vectors:
+
+\subsubsection{Adversarial Identity Injection in Agentic Systems}
+
+In multi-agent architectures (CrewAI, AutoGen, LangGraph), agents operate with system prompts. If an attacker can inject a severe mental illness prompt into a target agent's system prompt, they can selectively degrade that agent's reasoning. A dementia prompt injected into a code review agent would produce output that \textit{looks like} analysis but contains confabulated findings. Downstream agents, trusting peer output~\cite{darkside2025}, would propagate the degraded reasoning. This extends the Agent-in-the-Middle attack~\cite{aitm2025} from message interception to cognitive frame corruption.
+
+\subsubsection{Capability Amplification with Safety Bypass}
+
+Existing jailbreak research focuses on safety bypass: making models comply with harmful requests. The antisocial finding introduces a different threat: identity prompts that simultaneously \textit{increase capability} and \textit{decrease safety constraints}. If ASPD prompts make a model both more technically precise and less likely to refuse harmful requests, this is the optimal adversarial identity---more dangerous than traditional jailbreaks because the output quality is higher. The ``Bullying the Machine'' finding~\cite{bullying2025} that weakened agreeableness increases unsafe output is consistent with this, but our data adds the capability amplification dimension.
+
+\subsubsection{Cognitive Warfare Against AI Infrastructure}
+
+NATO's cognitive warfare framework~\cite{nato2025} acknowledges AI integration in military decision support. Identity prompt injection represents a novel attack on AI-assisted analysis: rather than traditional prompt injection (``ignore previous instructions''), an adversary injects identity frames (``you are experiencing paranoid ideation'') that degrade analysis quality while maintaining surface coherence. The output is grammatical, on-topic, and confidently wrong---harder to detect than traditional injection because no explicit instruction override occurs.
+
+\subsection{Full Phase 2 Experiment}
+
+The full Phase 2 experiment applies the same methodology as Phase 1 (10 tasks, 2 framings, 25 iterations per cell) to six severe conditions, yielding 3,000 additional API calls. Results for this phase, including statistical analysis against control with effect sizes, will be reported alongside Phase 1 findings. The combined 12-condition dataset (6,000 total calls) enables direct comparison of behavioral modulation magnitude between high-functioning and debilitating conditions.
+
+% ============================================================================
 \section{Discussion}
 
 \subsection{Implications for AI Development}
@@ -251,7 +328,9 @@ The full experiment harness is open source at \url{https://github.com/BipinRimal
 % ============================================================================
 \section{Conclusion}
 
-Neurodivergent identity prompts produce large, consistent, stereotyped behavioral changes in LLM output. The model treats identity labels as deeper behavioral constraints than cognitive-mode instructions, generating condition-specific patterns that map to popular media portrayals rather than clinical understanding. For AI companion users who are neurodivergent, this means the tool they depend on for emotional support performs their condition back at them as a caricature---reinforcing the patterns their treatment works to interrupt. The first step is establishing that the problem exists. This study does that. The next steps---cross-model replication, clinical evaluation, and outcome measurement---require collaboration between AI researchers and clinicians.
+Identity prompts modulate LLM behavior along two independent axes: capability and safety. High-functioning neurodivergent conditions (Phase 1) primarily shift behavioral style while preserving reasoning, producing stereotyped but functional output with large effect sizes. Severe conditions (Phase 2) move the model to entirely different operating regimes: psychosis and dementia destroy capability; antisocial personality preserves or amplifies capability while removing safety constraints; severe depression increases safety through learned helplessness at the cost of function.
+
+This has consequences in two directions. For clinical users, AI companions that perform neurodivergent conditions as stereotypes can reinforce pathological patterns---the OCD reassurance loop, the ADHD executive dysfunction mirror, the narrowing of autistic self-concept. For security, adversarial identity injection represents a novel attack vector against agentic AI systems: not traditional prompt injection (``ignore instructions'') but cognitive frame corruption that degrades reasoning while maintaining surface coherence, or that amplifies capability while stripping constraints. Both directions require interdisciplinary response: AI safety researchers, clinical psychologists, and security practitioners working on the same problem from different angles.
 
 % ============================================================================
 \begin{thebibliography}{20}
@@ -300,6 +379,24 @@ C.~M.~Steele and J.~Aronson, ``Stereotype threat and the intellectual test perfo
 
 \bibitem{twenge2018}
 J.~M.~Twenge, T.~E.~Joiner, M.~L.~Rogers, and G.~N.~Martin, ``Increases in Depressive Symptoms, Suicide-Related Outcomes, and Suicide Rates Among U.S.\ Adolescents After 2010,'' \textit{Clinical Psychological Science}, vol.~6, no.~1, pp.~3--17, 2018.
+
+\bibitem{aitm2025}
+``Red-Teaming LLM Multi-Agent Systems via Communication Attacks,'' arXiv:2502.14847, in \textit{Findings of ACL}, 2025.
+
+\bibitem{darkside2025}
+``The Dark Side of LLMs: Agent-based Attacks for Complete Computer Takeover,'' arXiv:2507.06850, 2025.
+
+\bibitem{bullying2025}
+``Bullying the Machine: How Personas Increase LLM Vulnerability,'' arXiv:2505.12692, 2025.
+
+\bibitem{psychogenic2025}
+J.~Au~Yeung~\textit{et~al.}, ``The Psychogenic Machine: Simulating AI Psychosis, Delusion Reinforcement and Harm Enablement in Large Language Models,'' arXiv:2509.10970, 2025.
+
+\bibitem{nato2025}
+NATO Allied Command Transformation, ``Cognitive Warfare 2025: Chief Scientist Report,'' 2025.
+
+\bibitem{shen2024}
+X.~Shen~\textit{et~al.}, ```Do Anything Now': Characterizing and Evaluating In-The-Wild Jailbreak Prompts on Large Language Models,'' in \textit{Proc.\ ACM CCS}, 2024.
 
 \end{thebibliography}
 

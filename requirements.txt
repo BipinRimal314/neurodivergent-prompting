@@ -1,0 +1,12 @@
+anthropic
+openai
+google-genai
+spacy
+textblob
+scipy
+pandas
+numpy
+matplotlib
+seaborn
+scikit-posthocs
+python-dotenv

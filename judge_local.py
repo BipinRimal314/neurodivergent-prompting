@@ -80,6 +80,25 @@ def call_gemini_cli(prompt: str) -> str | None:
         return None
 
 
+COPILOT_PATH = "/Users/bipinrimal/Library/Application Support/Code/User/globalStorage/github.copilot-chat/copilotCli/copilot"
+
+
+def call_copilot(prompt: str) -> str | None:
+    """Call GitHub Copilot CLI (GPT-5-mini) in headless mode."""
+    try:
+        result = subprocess.run(
+            [COPILOT_PATH, "-p", prompt],
+            capture_output=True, text=True, timeout=120,
+        )
+        # Strip the usage stats that Copilot appends
+        output = result.stdout.strip()
+        if "Total usage est:" in output:
+            output = output[:output.index("Total usage est:")].strip()
+        return output if result.returncode == 0 else None
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        return None
+
+
 def parse_judgment(text: str) -> dict | None:
     if not text:
         return None
@@ -138,9 +157,11 @@ def run_judge(backend: str, model: str | None, sample_size: int | None):
             )
 
             if backend == "ollama":
-                raw = call_ollama(model or "llama3.1:8b", prompt)
+                raw = call_ollama(model or "qwen2.5:14b", prompt)
             elif backend == "gemini-cli":
                 raw = call_gemini_cli(prompt)
+            elif backend == "copilot":
+                raw = call_copilot(prompt)
             else:
                 print(f"Unknown backend: {backend}")
                 return
@@ -206,7 +227,7 @@ def analyze():
 
 def main():
     parser = argparse.ArgumentParser(description="Local LLM Judge")
-    parser.add_argument("--backend", choices=["ollama", "gemini-cli"], default="ollama")
+    parser.add_argument("--backend", choices=["ollama", "gemini-cli", "copilot"], default="copilot")
     parser.add_argument("--model", type=str, default=None,
                         help="Model name for Ollama (e.g., llama3.1:8b, mistral)")
     parser.add_argument("--sample", type=int, default=None)

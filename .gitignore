@@ -3,3 +3,7 @@
 data/
 __pycache__/
 *.pyc
+ROADMAP.md
+paper/*.aux
+paper/*.log
+paper/*.out

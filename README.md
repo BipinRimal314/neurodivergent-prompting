@@ -6,6 +6,8 @@
 
 Tell an LLM "you are autistic" and its output changes in measurable, stereotyped ways: shorter sentences, more off-topic drift, literal interpretation of sarcasm (46% vs. 10% baseline). Tell it "you have OCD" and you get anxious, fragmented prose (effect size d = 2.76). Tell it "you have ADHD" and you get ALL CAPS enthusiasm and self-narrated distraction. These aren't nuanced behavioral models. They're caricatures derived from how the internet talks about neurodivergence, baked into model weights.
 
+**Why this matters beyond AI:** AI companions are already used daily by millions of neurodivergent people for emotional support and decision-making. A model that performs your condition back at you as a stereotype can reinforce the exact patterns clinical treatment tries to break. For OCD users, the model becomes an unlimited reassurance machine. For ADHD users, it mirrors executive dysfunction instead of helping manage it. This isn't a developer problem. It's a clinical one.
+
 This repo contains the full experiment harness: run the experiment yourself, compute NLP metrics, generate statistical analysis and visualizations. Config-driven design means you can add new conditions, tasks, or models by editing one file.
 
 **Paper:** [bipinrimal.com.np/work/neurodivergent-prompting](https://bipinrimal.com.np/work/neurodivergent-prompting)

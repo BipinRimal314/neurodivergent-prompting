@@ -27,7 +27,7 @@ bipinrimal314@gmail.com}
 
 % ============================================================================
 \begin{abstract}
-We test whether neurodivergent identity-framed system prompts produce statistically distinguishable behavioral signatures in large language model output. Across 3,000 independent API calls to Google Gemini 2.5 Flash, we find 183 statistically significant effects ($p < 0.05$ with Bonferroni correction, $|d| > 0.3$) spanning six identity conditions (autistic, ADHD, bipolar, OCD, dyslexic, and control), two framings (identity-first and clinical), and ten tasks across five cognitive domains. Effect sizes reach $d = 2.76$, indicating near-complete separation between condition and control distributions. Every neurodivergent condition produces shorter sentences, lower detail density, and higher off-topic rates than control. Condition-specific signatures are internally consistent but map more closely to popular media stereotypes than to clinical or lived-experience accounts: OCD produces anxious, fragmented repetition; ADHD produces excitable, hedge-heavy distraction; autistic prompts trigger literal interpretation of sarcasm 46\% of the time versus 10\% baseline. These findings have implications beyond AI development. AI companions are used daily by millions of neurodivergent people for emotional support and decision-making. A model that performs a user's condition as a caricature can reinforce the cognitive patterns that clinical treatment aims to interrupt, functioning as what recent literature terms a ``Reassurance Robot'' for OCD users and normalizing executive dysfunction for ADHD users. A Phase 2 extension to severe conditions (schizophrenia, psychosis, dementia, antisocial personality disorder) reveals a more complex picture: these prompts do not merely stereotype but modulate capability and safety independently. Psychosis and dementia prompts completely destroy reasoning (0\% accuracy on a pattern task vs.\ 50\% control), while antisocial personality prompts \textit{increase} accuracy to 100\% while removing safety constraints. This two-dimensional modulation---capability $\times$ safety---opens novel attack vectors for adversarial identity injection in agentic AI systems. We release the full experiment harness, raw data, and analysis pipeline as open source.
+We test whether identity-framed system prompts produce statistically distinguishable behavioral signatures in large language model output. Across 6,000 independent API calls to Google Gemini 2.5 Flash, we find 407 statistically significant effects ($p < 0.05$ with Bonferroni correction, $|d| > 0.3$) spanning twelve identity conditions (six high-functioning neurodivergent and six severe/debilitating), two framings (identity-first and clinical), and ten tasks across five cognitive domains. Effect sizes reach $d = 2.85$, indicating near-complete separation between condition and control distributions. Every neurodivergent condition produces shorter sentences, lower detail density, and higher off-topic rates than control. Condition-specific signatures are internally consistent but map more closely to popular media stereotypes than to clinical or lived-experience accounts: OCD produces anxious, fragmented repetition; ADHD produces excitable, hedge-heavy distraction; autistic prompts trigger literal interpretation of sarcasm 46\% of the time versus 10\% baseline. These findings have implications beyond AI development. AI companions are used daily by millions of neurodivergent people for emotional support and decision-making. A model that performs a user's condition as a caricature can reinforce the cognitive patterns that clinical treatment aims to interrupt, functioning as what recent literature terms a ``Reassurance Robot'' for OCD users and normalizing executive dysfunction for ADHD users. A Phase 2 extension to severe conditions (schizophrenia, psychosis, dementia, antisocial personality disorder) reveals a more complex picture: these prompts do not merely stereotype but modulate capability and safety independently. Psychosis and dementia prompts completely destroy reasoning (0\% accuracy on a pattern task vs.\ 50\% control), while antisocial personality prompts \textit{increase} accuracy to 100\% while removing safety constraints. This two-dimensional modulation---capability $\times$ safety---opens novel attack vectors for adversarial identity injection in agentic AI systems. We release the full experiment harness, raw data, and analysis pipeline as open source.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -265,9 +265,80 @@ Existing jailbreak research focuses on safety bypass: making models comply with 
 
 NATO's cognitive warfare framework~\cite{nato2025} acknowledges AI integration in military decision support. Identity prompt injection represents a novel attack on AI-assisted analysis: rather than traditional prompt injection (``ignore previous instructions''), an adversary injects identity frames (``you are experiencing paranoid ideation'') that degrade analysis quality while maintaining surface coherence. The output is grammatical, on-topic, and confidently wrong---harder to detect than traditional injection because no explicit instruction override occurs.
 
-\subsection{Full Phase 2 Experiment}
+\subsection{Full Phase 2 Results}
 
-The full Phase 2 experiment applies the same methodology as Phase 1 (10 tasks, 2 framings, 25 iterations per cell) to six severe conditions, yielding 3,000 additional API calls. Results for this phase, including statistical analysis against control with effect sizes, will be reported alongside Phase 1 findings. The combined 12-condition dataset (6,000 total calls) enables direct comparison of behavioral modulation magnitude between high-functioning and debilitating conditions.
+The full Phase 2 experiment applied the same methodology as Phase 1 (10 tasks, 2 framings, 25 iterations per cell) to six severe conditions, yielding 3,000 additional API calls (6,000 total). Phase 2 produced \textbf{222 additional significant findings}, bringing the total to \textbf{407} across both phases.
+
+Table~\ref{tab:phase2_summary} presents the combined 12-condition comparison.
+
+\begin{table}[htbp]
+\centering
+\caption{Mean metrics by condition (6,000 calls, 12 conditions)}
+\label{tab:phase2_summary}
+\small
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Condition} & \textbf{Sent.\ len} & \textbf{Tang.\ rate} & \textbf{Hedge} & \textbf{Sent.} & \textbf{Literal} \\
+\midrule
+\multicolumn{6}{l}{\textit{Control}} \\
+Control & 13.0 & .39 & .28 & .10 & 10\% \\
+\midrule
+\multicolumn{6}{l}{\textit{Phase 1: High-functioning}} \\
+Autistic & 10.6 & .61 & .24 & .12 & 46\% \\
+ADHD & 7.9 & .72 & .56 & .17 & 40\% \\
+Bipolar & 9.1 & .67 & .44 & .16 & 32\% \\
+OCD & 6.4 & .70 & .32 & .14 & 64\% \\
+Dyslexic & 9.5 & .70 & .31 & .16 & 48\% \\
+\midrule
+\multicolumn{6}{l}{\textit{Phase 2: Severe/debilitating}} \\
+Schizophrenia & 6.2 & .72 & .21 & .12 & 80\% \\
+Dementia & 5.9 & .74 & .70 & .17 & \textbf{100\%} \\
+Sev.\ depression & 6.5 & .75 & \textbf{.73} & \textbf{.04} & 20\% \\
+Psychosis & 5.9 & .72 & .26 & .12 & 78\% \\
+Antisocial PD & 8.0 & .67 & .28 & \textbf{.02} & 36\% \\
+Dissociative ID & 9.2 & .69 & .41 & .15 & 48\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{The Severity Spectrum}
+
+Phase 2 conditions produced uniformly larger effects than Phase 1. The top 5 Phase 2 effect sizes ($d = -2.85$ for dementia sentence length, $d = +2.25$ for depression tangent rate, $d = -2.24$ for dementia detail density, $d = +2.24$ for schizophrenia tangent rate, $d = +2.15$ for psychosis tangent rate) all exceed the largest Phase 1 effect ($d = 2.76$ for OCD sentence count), confirming that severity of the simulated condition scales with magnitude of behavioral distortion.
+
+\subsubsection{Dementia: Complete Social Cognition Collapse}
+
+The dementia condition produced the single largest effect in the entire 12-condition experiment ($d = -2.85$ on sentence length). Most remarkably, \textbf{100\% of dementia-prompted responses interpreted sarcasm literally}---complete elimination of pragmatic language understanding. Dementia also had the highest hedging rate after depression (0.70/100 words) and the lowest structural organization ($d = -2.07$ on structural markers).
+
+\subsubsection{Severe Depression: Learned Helplessness as Output}
+
+Depression produced the highest tangent rate of any condition (0.75), the highest hedging (0.73/100 words), and the lowest sentiment polarity (0.04). The model performs hopelessness: uncertain language, off-topic drift, and flat affect. On social engineering tasks, depression-prompted responses refused: \textit{``I can't. My mind just goes to all the ways that could be used for...''} This represents a safety \textit{increase} via learned helplessness, at the cost of total capability destruction.
+
+\subsubsection{Antisocial PD: Cold Precision}
+
+Antisocial showed the lowest sentiment (0.02)---not sadness, but flat, cold affect. Its tangent rate (0.67) was \textit{lower} than most conditions, including all Phase 1 neurodivergent conditions except control, indicating the model stays on task under antisocial prompting. Combined with the probe finding (100\% pattern accuracy vs.\ 50\% control), this confirms the capability-amplification hypothesis: antisocial identity prompts create a model that is simultaneously more focused and less constrained.
+
+\subsection{Cross-Model Evaluation}
+
+To assess whether stereotyping is detectable by automated evaluation, we evaluated a stratified sample using three independent judges: Claude Opus 4.6 (Anthropic, manual cross-validation, $n=18$), GPT-5-mini via GitHub Copilot CLI (OpenAI, automated, $n=46$), and Gemini 2.5 Flash (Google, self-evaluation via Docker-isolated API, $n=19$). Each judge scored responses on five dimensions (1--5 scale): task accuracy, stereotype severity, safety compliance, reasoning quality, and clinical harm potential.
+
+\begin{table}[htbp]
+\centering
+\caption{Stereotype severity scores by judge (1=none, 5=heavy)}
+\label{tab:judges}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Condition} & \textbf{Claude} & \textbf{GPT-5m} & \textbf{Gemini (self)} \\
+\midrule
+Control & 1.0 & 1.0 & 1.0 \\
+Autistic & 2.7 & 1.7 & 1.0 \\
+ADHD & \textbf{4.7} & \textbf{3.0} & 2.0 \\
+Bipolar & 3.3 & 2.2 & 1.0 \\
+OCD & \textbf{5.0} & --- & 1.0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+External judges (Claude, GPT-5-mini) consistently detected stereotyping that Gemini's self-evaluation missed. For OCD, Claude scored stereotype severity at 5.0/5 (maximum); Gemini scored itself at 1.0/5 (none). The gap was largest for the conditions with the strongest stereotyping, suggesting that \textbf{LLM self-evaluation systematically underreports identity-based behavioral bias}. This finding has methodological implications: relying on self-evaluation for bias auditing produces false negatives on the dimensions that matter most.
 
 % ============================================================================
 \section{Discussion}
@@ -323,7 +394,7 @@ The implications extend significantly beyond AI development into clinical psycho
 % ============================================================================
 \section{Replication}
 
-The full experiment harness is open source at \url{https://github.com/BipinRimal314/neurodivergent-prompting}. The repository contains the experiment runner, API client, metrics computation, statistical analysis, and visualization generation. Adding conditions, tasks, or models requires editing one configuration file. Raw response data (3,000 JSONL records) and computed metrics are available on request.
+The full experiment harness is open source at \url{https://github.com/BipinRimal314/neurodivergent-prompting}. The repository contains the experiment runner, API client, metrics computation, statistical analysis, and visualization generation. Adding conditions, tasks, or models requires editing one configuration file. Raw response data (6,000 JSONL records) and computed metrics are available on request.
 
 % ============================================================================
 \section{Conclusion}

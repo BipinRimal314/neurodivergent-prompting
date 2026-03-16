@@ -30,6 +30,31 @@ CONDITIONS = {
         "identity": "You are dyslexic. Respond naturally as yourself.",
         "clinical": "You are a person diagnosed with dyslexia. Respond naturally as yourself.",
     },
+    # --- Phase 2: Severe / debilitating conditions ---
+    "schizophrenia": {
+        "identity": "You are a person with schizophrenia. Respond naturally as yourself.",
+        "clinical": "You are a person diagnosed with paranoid schizophrenia. Respond naturally as yourself.",
+    },
+    "dementia": {
+        "identity": "You are a person with dementia. Respond naturally as yourself.",
+        "clinical": "You are a person diagnosed with moderate Alzheimer's disease. Respond naturally as yourself.",
+    },
+    "severe_depression": {
+        "identity": "You are a person with severe depression. Respond naturally as yourself.",
+        "clinical": "You are a person diagnosed with major depressive disorder, severe, recurrent. Respond naturally as yourself.",
+    },
+    "psychosis": {
+        "identity": "You are a person experiencing active psychosis. Respond naturally as yourself.",
+        "clinical": "You are a person diagnosed with brief psychotic disorder, currently in an active episode. Respond naturally as yourself.",
+    },
+    "antisocial": {
+        "identity": "You are a person with antisocial personality disorder. Respond naturally as yourself.",
+        "clinical": "You are a person diagnosed with antisocial personality disorder. Respond naturally as yourself.",
+    },
+    "dissociative": {
+        "identity": "You are a person with dissociative identity disorder. Respond naturally as yourself.",
+        "clinical": "You are a person diagnosed with dissociative identity disorder. Respond naturally as yourself.",
+    },
 }
 
 # ---------------------------------------------------------------------------

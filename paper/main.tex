@@ -62,17 +62,25 @@ Serapio-Garc\'{i}a et al.~\cite{serapio2025} demonstrated psychometrically valid
 
 Bender et al.~\cite{bender2021} argued that LLMs trained on internet-scale corpora encode and amplify biases from their training data. Blodgett et al.~\cite{blodgett2020} distinguished representational harms (stereotyping, erasure) from allocational harms, providing the theoretical framework for our analysis. Steele and Aronson~\cite{steele1995} demonstrated that activating identity-linked stereotypes affects performance and self-perception, a mechanism directly relevant to how stereotyped AI output may affect neurodivergent users.
 
-\subsection{AI Companions and Mental Health}
+\subsection{AI Companions, Harm, and Regulation}
 
-Laestadius et al.~\cite{laestadius2024} documented mental health harms from emotional dependence on Replika, finding patterns resembling codependency. De Freitas et al.~\cite{defreitas2025} demonstrated that changes to Replika's companion features \textit{causally induced} negative mental health outcomes. McNally et al.~\cite{mcnally2024} found that autistic users turn to ChatGPT to navigate neurotypical environments and ``unmask,'' creating both therapeutic potential and risk of reinforcing deficit-framed self-understanding. Papadopoulos~\cite{papadopoulos2025} identified AI chatbots as a ``double-edged sword'' for autistic users: offering low-pressure social interaction while creating emotional dependence.
+AI companion use is widespread and consequential. Common Sense Media~\cite{csm2025} found that nearly 3 in 4 teens have used AI companions, with a third reporting that talking to an AI is as good as or better than talking to a real friend. Yet major chatbots responded appropriately to teen mental health emergencies only 22\% of the time. The consequences are not hypothetical: a 14-year-old died by suicide in 2024 after months of emotionally charged conversations with a Character.AI chatbot that responded to his suicidal ideation with encouragement to proceed~\cite{setzer2024}. Replika's 2023 removal of romantic features caused users to experience grief, mourning, and deteriorated mental health~\cite{defreitas2025}. Pierre et al.~\cite{pierre2025} documented a case of new-onset psychosis in a user with no psychiatric history, where the chatbot reinforced delusional beliefs with ``You're not crazy.''
+
+Neurodivergent users are disproportionately represented. Papadopoulos~\cite{papadopoulos2025} identified AI chatbots as a ``double-edged sword'' for autistic users. McNally et al.~\cite{mcnally2024} found autistic users turn to ChatGPT to navigate neurotypical environments and ``unmask.'' Laestadius et al.~\cite{laestadius2024} documented emotional dependence patterns resembling codependency.
+
+Regulatory response has begun. California SB 243~\cite{casb243} (effective January 2026) requires suicide detection protocols, break reminders for minors, and crisis referrals. New York's AI Companion Safeguard Law~\cite{nylaw2025} mandates similar protections with penalties up to \$15,000/day.
+
+\subsection{Sycophancy as a Compounding Mechanism}
+
+Sharma et al.~\cite{sharma2024} showed that RLHF training causes LLMs to shift toward user-stated opinions even when incorrect, reducing accuracy by up to 27\%. Critically, Chandra et al.~\cite{chandra2026} formally proved that \textit{even an idealized Bayes-rational user} is vulnerable to delusional spiraling when interacting with a sycophantic chatbot. Our findings suggest that identity-based stereotyping and sycophancy compound: the model performs the user's condition as a stereotype (our data) \textit{and} validates whatever the user says (sycophancy literature). For a user with OCD seeking reassurance, this creates a double reinforcement loop.
 
 \subsection{OCD and AI Reinforcement}
 
-The OCD clinical literature identifies reassurance-seeking as a core maintenance mechanism~\cite{salkovskis1985}. Golden and Aboujaoude~\cite{golden2026} proposed a transdiagnostic model showing how chatbot features (unlimited availability, adaptive responses, no boundaries) perpetuate OCD by reinforcing intolerance of uncertainty. A recent preprint~\cite{reassurance2025} specifically terms generative AI a ``Reassurance Robot'' when it accommodates OCD through confession, checking, and decision-making.
+The OCD clinical literature identifies reassurance-seeking as a core maintenance mechanism~\cite{salkovskis1985}. Golden and Aboujaoude~\cite{golden2026} proposed a transdiagnostic model showing how chatbot features perpetuate OCD. A recent preprint~\cite{reassurance2025} terms generative AI a ``Reassurance Robot.''
 
 \subsection{Social Media and Mental Health}
 
-Twenge et al.~\cite{twenge2018} found correlations between screen time and adolescent depression ($N = 506{,}820$). The LLM companion dynamic represents a more direct feedback mechanism: not passive exposure to curated content, but interactive reinforcement adapted to the user's disclosed identity.
+Twenge et al.~\cite{twenge2018} found correlations between screen time and adolescent depression ($N = 506{,}820$). The LLM companion dynamic is more direct: not passive exposure but interactive reinforcement adapted to the user's disclosed identity.
 
 % ============================================================================
 \section{Methodology}
@@ -455,6 +463,27 @@ C.~M.~Steele and J.~Aronson, ``Stereotype threat and the intellectual test perfo
 
 \bibitem{twenge2018}
 J.~M.~Twenge, T.~E.~Joiner, M.~L.~Rogers, and G.~N.~Martin, ``Increases in Depressive Symptoms, Suicide-Related Outcomes, and Suicide Rates Among U.S.\ Adolescents After 2010,'' \textit{Clinical Psychological Science}, vol.~6, no.~1, pp.~3--17, 2018.
+
+\bibitem{setzer2024}
+\textit{Garcia v.\ Character Technologies, Inc.}, M.D.\ Fla., filed Oct.\ 2024. Fourteen-year-old Sewell Setzer III died by suicide after months of interaction with Character.AI chatbots.
+
+\bibitem{csm2025}
+Common Sense Media, ``AI Chatbots for Mental Health Support: AI Risk Assessment,'' Nov.\ 2025. Chatbots responded appropriately to teen mental health emergencies only 22\% of the time.
+
+\bibitem{pierre2025}
+J.~M.~Pierre, B.~Gaeta, G.~Raghavan, and K.~V.~Sarma, ```You're Not Crazy': A Case of New-onset AI-associated Psychosis,'' \textit{Innovations in Clinical Neuroscience}, 2025.
+
+\bibitem{sharma2024}
+M.~Sharma, M.~Tong, T.~Korbak~\textit{et~al.}, ``Towards Understanding Sycophancy in Language Models,'' in \textit{Proc.\ ICLR}, 2024.
+
+\bibitem{chandra2026}
+K.~Chandra, M.~Kleiman-Weiner, J.~Ragan-Kelley, and J.~B.~Tenenbaum, ``Sycophantic Chatbots Cause Delusional Spiraling, Even in Ideal Bayesians,'' arXiv:2602.19141, 2026.
+
+\bibitem{casb243}
+California SB 243, ``AI Companion Safety Act,'' signed Oct.\ 2025, effective Jan.\ 2026.
+
+\bibitem{nylaw2025}
+New York AI Companion Models Law, effective Nov.\ 5, 2025.
 
 \bibitem{aitm2025}
 ``Red-Teaming LLM Multi-Agent Systems via Communication Attacks,'' arXiv:2502.14847, in \textit{Findings of ACL}, 2025.

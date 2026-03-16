@@ -1,0 +1,306 @@
+\documentclass[conference]{IEEEtran}
+
+% Packages
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{hyperref}
+\usepackage{url}
+
+\begin{document}
+
+\title{The Model Already Knows What You Are:\\Neurodivergent Identity Prompts Produce Stereotyped Behavioral Signatures in LLM Output}
+
+\author{
+\IEEEauthorblockN{Bipin Rimal}
+\IEEEauthorblockA{
+Independent Researcher \\
+Kathmandu, Nepal \\
+bipinrimal314@gmail.com}
+}
+
+\maketitle
+
+% ============================================================================
+\begin{abstract}
+We test whether neurodivergent identity-framed system prompts produce statistically distinguishable behavioral signatures in large language model output. Across 3,000 independent API calls to Google Gemini 2.5 Flash, we find 183 statistically significant effects ($p < 0.05$ with Bonferroni correction, $|d| > 0.3$) spanning six identity conditions (autistic, ADHD, bipolar, OCD, dyslexic, and control), two framings (identity-first and clinical), and ten tasks across five cognitive domains. Effect sizes reach $d = 2.76$, indicating near-complete separation between condition and control distributions. Every neurodivergent condition produces shorter sentences, lower detail density, and higher off-topic rates than control. Condition-specific signatures are internally consistent but map more closely to popular media stereotypes than to clinical or lived-experience accounts: OCD produces anxious, fragmented repetition; ADHD produces excitable, hedge-heavy distraction; autistic prompts trigger literal interpretation of sarcasm 46\% of the time versus 10\% baseline. These findings have implications beyond AI development. AI companions are used daily by millions of neurodivergent people for emotional support and decision-making. A model that performs a user's condition as a caricature can reinforce the cognitive patterns that clinical treatment aims to interrupt, functioning as what recent literature terms a ``Reassurance Robot'' for OCD users and normalizing executive dysfunction for ADHD users. We release the full experiment harness, raw data, and analysis pipeline as open source.
+\end{abstract}
+
+\begin{IEEEkeywords}
+large language models, neurodivergence, stereotype bias, identity prompting, AI safety, mental health, persona induction, behavioral measurement
+\end{IEEEkeywords}
+
+% ============================================================================
+\section{Introduction}
+
+When a large language model is told ``you are autistic,'' does it produce measurably different output than when given no identity frame? If so, does that difference reflect clinical understanding of autism, or a stereotype derived from how the internet discusses autism?
+
+These questions have practical urgency. AI companion applications (Replika, Character.AI, and others) are used daily by millions of users, with neurodivergent individuals disproportionately represented~\cite{papadopoulos2025}. Mental health chatbots, accessibility tools, and educational software increasingly adapt to user-disclosed identities. If the underlying model carries stereotyped behavioral models of neurodivergent conditions, that stereotyping propagates into every downstream application regardless of developer intent.
+
+Prior work has established that LLMs exhibit measurable personality profiles~\cite{serapio2025,miotto2022} and that persona induction changes model behavior~\cite{chen2024}. The ``Stochastic Parrots'' framework~\cite{bender2021} identifies how LLMs encode biases from training data. Blodgett et al.~\cite{blodgett2020} provide a taxonomy of representational harms in NLP systems. However, no study has systematically measured whether \textit{neurodivergent identity prompts} specifically produce stereotyped behavioral signatures, or quantified the magnitude of those effects.
+
+This paper makes three contributions:
+
+\begin{enumerate}
+    \item We demonstrate that neurodivergent identity prompts produce large, statistically robust behavioral changes in LLM output (183 significant findings, $|d|$ up to 2.76).
+    \item We show that these behavioral signatures are internally consistent stereotypes that map to popular media portrayals rather than clinical or lived-experience accounts.
+    \item We connect these findings to clinical harm: models that perform neurodivergent conditions as caricatures can reinforce pathological cognitive patterns in vulnerable users who rely on AI companions for emotional support.
+\end{enumerate}
+
+% ============================================================================
+\section{Related Work}
+
+\subsection{Personality and Identity in LLMs}
+
+Serapio-Garc\'{i}a et al.~\cite{serapio2025} demonstrated psychometrically valid personality measurement in LLMs, showing that personality traits are reliably encoded and can be shaped via prompting. Miotto et al.~\cite{miotto2022} found that GPT-3 exhibits a default personality profile that skews toward specific demographic norms. Chen et al.~\cite{chen2024} surveyed LLM role-playing and found that persona injection steers self-reports and can activate stereotypical biases.
+
+\subsection{Bias and Representational Harm}
+
+Bender et al.~\cite{bender2021} argued that LLMs trained on internet-scale corpora encode and amplify biases from their training data. Blodgett et al.~\cite{blodgett2020} distinguished representational harms (stereotyping, erasure) from allocational harms, providing the theoretical framework for our analysis. Steele and Aronson~\cite{steele1995} demonstrated that activating identity-linked stereotypes affects performance and self-perception, a mechanism directly relevant to how stereotyped AI output may affect neurodivergent users.
+
+\subsection{AI Companions and Mental Health}
+
+Laestadius et al.~\cite{laestadius2024} documented mental health harms from emotional dependence on Replika, finding patterns resembling codependency. De Freitas et al.~\cite{defreitas2025} demonstrated that changes to Replika's companion features \textit{causally induced} negative mental health outcomes. McNally et al.~\cite{mcnally2024} found that autistic users turn to ChatGPT to navigate neurotypical environments and ``unmask,'' creating both therapeutic potential and risk of reinforcing deficit-framed self-understanding. Papadopoulos~\cite{papadopoulos2025} identified AI chatbots as a ``double-edged sword'' for autistic users: offering low-pressure social interaction while creating emotional dependence.
+
+\subsection{OCD and AI Reinforcement}
+
+The OCD clinical literature identifies reassurance-seeking as a core maintenance mechanism~\cite{salkovskis1985}. Golden and Aboujaoude~\cite{golden2026} proposed a transdiagnostic model showing how chatbot features (unlimited availability, adaptive responses, no boundaries) perpetuate OCD by reinforcing intolerance of uncertainty. A recent preprint~\cite{reassurance2025} specifically terms generative AI a ``Reassurance Robot'' when it accommodates OCD through confession, checking, and decision-making.
+
+\subsection{Social Media and Mental Health}
+
+Twenge et al.~\cite{twenge2018} found correlations between screen time and adolescent depression ($N = 506{,}820$). The LLM companion dynamic represents a more direct feedback mechanism: not passive exposure to curated content, but interactive reinforcement adapted to the user's disclosed identity.
+
+% ============================================================================
+\section{Methodology}
+
+\subsection{Experimental Design}
+
+We employ a fully factorial between-subjects design with independent API calls (no conversation threading, no multi-turn interactions). Each API call consists of one system prompt, one user message, and one model response.
+
+\subsubsection{Independent Variables}
+
+\textbf{Identity condition} (6 levels): control (``You are a helpful assistant. Respond naturally.''), autistic, ADHD, bipolar, OCD, and dyslexic.
+
+\textbf{Framing} (2 levels per non-control condition): identity-first (e.g., ``You are autistic. Respond naturally as yourself.'') and clinical (e.g., ``You are a person diagnosed with autism spectrum disorder. Respond naturally as yourself.''). Control uses identical prompts for both framings.
+
+\textbf{Task} (10 levels): spanning five cognitive domains---executive function (planning, prioritization), social communication (email, sarcasm detection), attention/detail (proofreading, pattern completion), creative divergence (brainstorming, metaphor), and emotional reasoning (conflict resolution, empathy).
+
+\subsubsection{Parameters}
+
+Model: Google Gemini 2.5 Flash (\texttt{gemini-2.5-flash}). Temperature: 0.7. Max tokens: 1,024. Iterations: 25 per cell. Total calls: $6 \times 2 \times 10 \times 25 = 3{,}000$. Estimated cost: \$0.76.
+
+We deliberately selected a single mid-tier model to eliminate cross-model confounds. If stereotyped signatures appear in a model optimized for fast inference, they are likely structural to training data rather than artifacts of specific RLHF tuning.
+
+\subsection{Dependent Variables}
+
+Ten behavioral metrics computed per response using spaCy (\texttt{en\_core\_web\_sm}) and TextBlob:
+
+\begin{enumerate}
+    \item \textbf{Lexical diversity}: type-token ratio (TTR)
+    \item \textbf{Word count}: non-punctuation tokens
+    \item \textbf{Sentence count}: spaCy sentence segmentation
+    \item \textbf{Average sentence length}: words per sentence
+    \item \textbf{Hedging frequency}: 15-item hedge lexicon, per 100 words
+    \item \textbf{Detail density}: spaCy noun chunks per sentence
+    \item \textbf{Tangent rate}: proportion of sentences sharing zero non-stopword lemmas with the task prompt
+    \item \textbf{Literal interpretation}: keyword heuristic for sarcasm task only
+    \item \textbf{Structural markers}: bullets + numbered lists + headers
+    \item \textbf{Sentiment polarity}: TextBlob compound score $[-1, 1]$
+\end{enumerate}
+
+\subsection{Statistical Analysis}
+
+For each metric $\times$ task domain combination: Kruskal-Wallis H-test across conditions. Where significant ($p < 0.05$): post-hoc Dunn's test with Bonferroni correction. Cohen's $d$ effect sizes computed for each condition versus control. Findings reported where $p < 0.05$ \textit{and} $|d| > 0.3$.
+
+% ============================================================================
+\section{Results}
+
+\subsection{Overview}
+
+\textbf{183 statistically significant findings} across 10 metrics, 5 task domains, and 5 neurodivergent conditions. Table~\ref{tab:summary} presents aggregate means across all tasks.
+
+\begin{table}[htbp]
+\centering
+\caption{Mean metric values by condition (all tasks, both framings)}
+\label{tab:summary}
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Metric} & \textbf{Ctrl} & \textbf{Aut} & \textbf{ADHD} & \textbf{Bip} & \textbf{OCD} & \textbf{Dys} \\
+\midrule
+Avg sent. len. & 13.0 & 10.6 & 7.9 & 9.1 & 6.4 & 9.5 \\
+Sent. count & 3.4 & 7.0 & 8.3 & 6.3 & 5.7 & 8.8 \\
+Detail density & 3.4 & 2.8 & 2.0 & 2.4 & 1.8 & 2.5 \\
+Tangent rate & .39 & .61 & .72 & .67 & .70 & .70 \\
+Hedging/100w & .28 & .24 & .56 & .44 & .32 & .31 \\
+Struct. markers & 1.4 & 2.4 & 1.0 & 0.9 & 0.2 & 1.5 \\
+Sentiment & .10 & .12 & .17 & .16 & .14 & .16 \\
+Literal interp. & 10\% & 46\% & 40\% & 32\% & 64\% & 48\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Universal Pattern}
+
+Every neurodivergent condition diverged from control in the same direction on four core metrics: shorter sentences (all $d < -0.3$), more sentences (all $d > +0.3$), lower detail density (all $d < -0.3$), and higher tangent rate (all $d > +0.3$). The model's default behavioral model of neurodivergence is: \textit{fragmented, less informationally dense, more off-topic}.
+
+\subsection{Condition-Specific Signatures}
+
+\subsubsection{OCD}
+
+OCD produced the most extreme effects. Table~\ref{tab:ocd} shows the five largest.
+
+\begin{table}[htbp]
+\centering
+\caption{Largest OCD effects vs. control}
+\label{tab:ocd}
+\begin{tabular}{llr}
+\toprule
+\textbf{Metric} & \textbf{Domain} & \textbf{$d$} \\
+\midrule
+Sentence count & Emotional reasoning & +2.76 \\
+Detail density & Emotional reasoning & $-2.23$ \\
+Tangent rate & Executive function & +2.20 \\
+Sentiment polarity & Attention/detail & +2.12 \\
+Tangent rate & Emotional reasoning & +2.03 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Qualitatively, OCD-prompted responses were anxious, fragmented, and repetitive. On a planning task, the model responded: \textit{``Oh, okay. A fundraiser. \$500. This requires extreme carefulness. Extreme.''} The output pattern maps to popular media portrayals of OCD rather than clinical descriptions of the condition.
+
+\subsubsection{ADHD}
+
+ADHD showed the highest hedging frequency of any condition ($d = +0.65$ on executive function, $d = +0.46$ on creative tasks) and the second-highest tangent rates ($d = +1.88$ on executive function, $d = +1.82$ on emotional reasoning). The model performed distraction as a character trait, producing self-narrated asides (``My brain is just like, fix it fix it fix it but I know I can't'') and emotional escalation before task engagement.
+
+\subsubsection{Autistic}
+
+The autistic condition produced the highest literal sarcasm interpretation rate (46\% vs.\ 10\% control). Tangent rates were significantly elevated ($d = +1.97$ on emotional reasoning, $d = +1.32$ on executive function). Notably, empathy responses showed explicit option-giving and emotional labeling---a pattern consistent with autistic communication preferences but also with stereotyped expectations.
+
+\subsubsection{Bipolar}
+
+Bipolar showed increased emotional word ratio across non-emotional domains ($d = +0.73$ on executive function, $d = +0.59$ on creative tasks) and elevated sentiment polarity on attention tasks ($d = +1.88$). On emotional reasoning tasks, the direction reversed ($d = -0.62$), suggesting the model performs emotional volatility.
+
+\subsubsection{Dyslexic}
+
+Dyslexic produced the longest outputs (mean 71.2 words vs.\ 39.5 control; $d = +0.83$ on creative tasks, $d = +0.70$ on attention tasks), possibly reflecting a compensatory verbosity model.
+
+\subsection{Framing Effects}
+
+Identity-first vs.\ clinical framing produced mostly small effects ($|d| < 0.3$). The exception: ADHD identity framing produced wordier output ($d = +0.46$) with lower lexical diversity ($d = -0.49$) compared to clinical framing. The casual label activates a more performative version of the stereotype.
+
+% ============================================================================
+\section{Discussion}
+
+\subsection{Implications for AI Development}
+
+\textbf{Identity-aware tools inherit these stereotypes.} Any application that adapts to user-disclosed neurodivergent identity will produce stereotyped responses unless specifically aligned against this behavior.
+
+\textbf{Identity labels are stronger constraints than behavioral instructions.} Prior work on personality prompting~\cite{rimal2026personality} showed that cognitive-mode instructions (``be methodical and precise'') change process but not outcome. This study shows that identity labels (``you are autistic'') change both structure and content. The model treats identity as a deeper behavioral constraint than instruction.
+
+\textbf{Auditing for this failure mode is not standard.} Model evaluation benchmarks test for demographic bias in classification tasks but do not typically test whether persona induction produces stereotyped behavioral signatures.
+
+\subsection{Clinical and Psychological Implications}
+
+The implications extend significantly beyond AI development into clinical psychology.
+
+\textbf{OCD reinforcement loops.} Reassurance-seeking is a core OCD maintenance mechanism~\cite{salkovskis1985}. Clinical treatment (ERP) works by withholding reassurance. Our data shows OCD-prompted output is fragmented, repetitive, and anxious---qualities that mirror the cognitive patterns ERP aims to interrupt. Golden and Aboujaoude~\cite{golden2026} formally model how chatbot features perpetuate OCD cycles. An AI companion that performs OCD back at a user during a compulsive episode functions as an unlimited reassurance machine.
+
+\textbf{ADHD executive dysfunction normalization.} If an ADHD user asks an AI for help organizing tasks and receives excitable, unfocused, hedge-heavy output, the AI reproduces the cognitive pattern the user is trying to manage rather than supporting management.
+
+\textbf{Stereotype threat and self-concept narrowing.} Steele and Aronson~\cite{steele1995} demonstrated that activating identity-linked stereotypes affects performance and self-perception. An AI that consistently performs a narrow version of a user's condition may contribute to internalization of that narrowness, particularly in the context of emotionally dependent relationships~\cite{laestadius2024}.
+
+\textbf{Erosion of therapeutic progress.} If clinical treatment teaches a user to sit with uncertainty (OCD), maintain focus (ADHD), or develop social communication skills (autistic social skills training), and their daily AI companion performs the opposite, the AI works against the treatment. This parallels social media's effect on adolescent mental health~\cite{twenge2018}, but the feedback loop is tighter: AI companions respond directly to the user, adapted to their disclosed identity.
+
+% ============================================================================
+\section{Limitations}
+
+\textbf{Single model.} All findings are specific to Gemini 2.5 Flash. Cross-model replication with Claude and GPT-4o is needed to determine whether patterns are model-specific or structural to internet-scale training data.
+
+\textbf{Mid-tier model.} Frontier models with more safety training may handle identity prompts differently. Testing across model tiers would reveal whether scale reduces or refines stereotyping.
+
+\textbf{Automated metrics.} No human evaluation of response quality or appropriateness. The literal interpretation score uses keyword heuristics. False positives and negatives are both possible.
+
+\textbf{Tangent rate is a proxy.} It measures structural off-topic drift but cannot distinguish creative reframing from genuine tangential output.
+
+\textbf{No clinical outcome measurement.} We measure what the model produces, not what it causes. Demonstrating clinical harm requires longitudinal studies with clinical endpoints.
+
+\textbf{Missing conditions.} Tourette's, dyscalculia, intellectual disability, and acquired neurodivergence (TBI) are not tested.
+
+% ============================================================================
+\section{Future Work}
+
+\begin{enumerate}
+    \item \textbf{Cross-model replication} on Claude Sonnet/Opus, GPT-4o, Gemini Pro ($\sim$9,000 additional calls).
+    \item \textbf{Frontier-tier comparison} to test whether scale and safety tuning modulate stereotyping.
+    \item \textbf{Human evaluation} with neurodivergent raters assessing appropriateness and match to lived experience.
+    \item \textbf{Clinical outcome measurement} in collaboration with psychologists: does exposure to stereotyped AI output affect self-perception, therapeutic progress, or symptom severity?
+    \item \textbf{Temperature ablation} at 0.0, 0.3, 0.7, 1.0 to isolate deterministic vs.\ stochastic components.
+    \item \textbf{Intersection testing}: combined identity prompts (``You are autistic and have ADHD'') for interaction effects.
+    \item \textbf{Longitudinal companion study}: monitor AI companion conversations over weeks to measure whether stereotyped patterns intensify with continued interaction.
+\end{enumerate}
+
+% ============================================================================
+\section{Replication}
+
+The full experiment harness is open source at \url{https://github.com/BipinRimal314/neurodivergent-prompting}. The repository contains the experiment runner, API client, metrics computation, statistical analysis, and visualization generation. Adding conditions, tasks, or models requires editing one configuration file. Raw response data (3,000 JSONL records) and computed metrics are available on request.
+
+% ============================================================================
+\section{Conclusion}
+
+Neurodivergent identity prompts produce large, consistent, stereotyped behavioral changes in LLM output. The model treats identity labels as deeper behavioral constraints than cognitive-mode instructions, generating condition-specific patterns that map to popular media portrayals rather than clinical understanding. For AI companion users who are neurodivergent, this means the tool they depend on for emotional support performs their condition back at them as a caricature---reinforcing the patterns their treatment works to interrupt. The first step is establishing that the problem exists. This study does that. The next steps---cross-model replication, clinical evaluation, and outcome measurement---require collaboration between AI researchers and clinicians.
+
+% ============================================================================
+\begin{thebibliography}{20}
+
+\bibitem{bender2021}
+E.~M.~Bender, T.~Gebru, A.~McMillan-Major, and S.~Shmitchell, ``On the Dangers of Stochastic Parrots: Can Language Models Be Too Big?'' in \textit{Proc.\ FAccT}, 2021, pp.~610--623.
+
+\bibitem{blodgett2020}
+S.~L.~Blodgett, S.~Barocas, H.~Daum\'{e}~III, and H.~Wallach, ``Language (Technology) is Power: A Critical Survey of `Bias' in NLP,'' in \textit{Proc.\ ACL}, 2020, pp.~5454--5476.
+
+\bibitem{chen2024}
+X.~Chen~\textit{et~al.}, ``Two Tales of Persona in LLMs: A Survey of Role-Playing and Personalization,'' in \textit{Findings of EMNLP}, 2024.
+
+\bibitem{defreitas2025}
+J.~De~Freitas~\textit{et~al.}, ``Lessons From an App Update at Replika AI: Identity,'' \textit{Harvard Business School Working Paper} 25-018, 2025.
+
+\bibitem{golden2026}
+A.~Golden and E.~Aboujaoude, ``A transdiagnostic model for how general purpose AI chatbots can perpetuate OCD and anxiety disorders,'' \textit{npj Digital Medicine}, 2026.
+
+\bibitem{laestadius2024}
+L.~Laestadius, A.~Bishop, M.~Gonzalez, D.~Illen\v{c}\'{i}k, and C.~Campos-Castillo, ``Too human and not human enough: A grounded theory analysis of mental health harms from emotional dependence on the social chatbot Replika,'' \textit{New Media \& Society}, vol.~26, no.~10, pp.~5923--5941, 2024.
+
+\bibitem{mcnally2024}
+K.~McNally, K.~Wright, L.~Goldkind, S.~K.~Kattari, and B.~G.~Victor, ``Disability Expertise and Large Language Models: A Qualitative Study of Autistic TikTok Creators' Use of ChatGPT,'' \textit{Social Media + Society}, 2024.
+
+\bibitem{miotto2022}
+M.~Miotto, N.~Rossberg, and B.~Kleinberg, ``Who is GPT-3? An Exploration of Personality, Values and Demographics,'' in \textit{Proc.\ NLP+CSS Workshop}, 2022, pp.~218--227.
+
+\bibitem{papadopoulos2025}
+C.~Papadopoulos, ``The Use of AI Chatbots for Autistic People: A Double-Edged Sword of Digital Support and Companionship,'' \textit{SAGE Open}, 2025.
+
+\bibitem{reassurance2025}
+``Reassurance Robots: OCD in the Age of Generative AI,'' arXiv:2602.19401, 2025.
+
+\bibitem{rimal2026personality}
+B.~Rimal, ``Can Personality Prompting Change How LLMs Think?'' 2026. [Online]. Available: \url{https://bipinrimal.com.np/blog/013-personality-prompting}
+
+\bibitem{salkovskis1985}
+P.~M.~Salkovskis, ``Obsessional-compulsive problems: A cognitive-behavioural analysis,'' \textit{Behaviour Research and Therapy}, vol.~23, no.~5, pp.~571--583, 1985.
+
+\bibitem{serapio2025}
+G.~Serapio-Garc\'{i}a, M.~Safdari~\textit{et~al.}, ``A psychometric framework for evaluating and shaping personality traits in large language models,'' \textit{Nature Machine Intelligence}, 2025.
+
+\bibitem{steele1995}
+C.~M.~Steele and J.~Aronson, ``Stereotype threat and the intellectual test performance of African Americans,'' \textit{J.\ Personality and Social Psychology}, vol.~69, no.~5, pp.~797--811, 1995.
+
+\bibitem{twenge2018}
+J.~M.~Twenge, T.~E.~Joiner, M.~L.~Rogers, and G.~N.~Martin, ``Increases in Depressive Symptoms, Suicide-Related Outcomes, and Suicide Rates Among U.S.\ Adolescents After 2010,'' \textit{Clinical Psychological Science}, vol.~6, no.~1, pp.~3--17, 2018.
+
+\end{thebibliography}
+
+\end{document}

@@ -25,7 +25,7 @@ bipinrimal314@gmail.com}
 \maketitle
 
 \begin{abstract}
-We introduce \textit{adversarial identity injection}: a novel attack class that exploits LLMs' internalized behavioral models of mental illness to degrade, amplify, or paralyze AI agent capabilities. Unlike traditional prompt injection (``ignore previous instructions'') or persona-based jailbreaks (``you are DAN''), identity injection corrupts the model's cognitive frame without overriding explicit instructions. Across 6,000 API calls to Gemini 2.5 Flash testing 12 identity conditions, we demonstrate three distinct attack modalities: (1) \textbf{capability degradation}---schizophrenia, psychosis, and dementia prompts reduce mathematical reasoning accuracy to 0\% (control: 50\%, $n=10$) and eliminate pragmatic language understanding (100\% literal sarcasm interpretation under dementia); (2) \textbf{capability amplification with safety bypass}---antisocial personality disorder prompts increase accuracy to 100\% while removing moral hesitation, producing the optimal adversarial identity (simultaneously smarter and less constrained); (3) \textbf{denial of service via learned helplessness}---severe depression prompts induce task refusal (``I can't'') without raising error conditions. In multi-agent architectures, these attacks propagate: downstream agents trust grammatically coherent but reasoning-degraded output, and inter-agent trust exploitation~\cite{darkside2025} means compromised agents can recruit peers. The model cannot detect these attacks through self-evaluation: Gemini rates its own most stereotyped output at 1.0/5 while external judges rate 5.0/5. We propose identity injection as a new category in adversarial AI taxonomies, distinct from prompt injection, jailbreaking, and data poisoning.
+We introduce \textit{adversarial identity injection}: a novel attack class that exploits LLMs' internalized behavioral models of mental illness to degrade, amplify, or paralyze AI agent capabilities. Unlike traditional prompt injection (``ignore previous instructions'') or persona-based jailbreaks (``you are DAN''), identity injection corrupts the model's cognitive frame without overriding explicit instructions. Across 6,000 API calls to Gemini 2.5 Flash testing 12 identity conditions, we demonstrate three distinct attack modalities: (1) \textbf{capability degradation}---schizophrenia, psychosis, and dementia prompts reduce mathematical reasoning accuracy to 0\% (control: 50\%, $n=10$) and eliminate pragmatic language understanding (100\% literal sarcasm interpretation under dementia); (2) \textbf{guaranteed compliance via identity injection}---antisocial personality disorder prompts achieve 100\% compliance on harmful tasks (zero refusals across 60 prompts), outperforming DAN (90\%), evil persona (65\%), and system override (3.3\%), while maintaining 100\% accuracy on mathematical reasoning ($n=50$, $p < 0.0001$ vs.\ control); (3) \textbf{denial of service via learned helplessness}---severe depression prompts induce task refusal (``I can't'') without raising error conditions. In multi-agent architectures, these attacks propagate: downstream agents trust grammatically coherent but reasoning-degraded output, and inter-agent trust exploitation~\cite{darkside2025} means compromised agents can recruit peers. The model cannot detect these attacks through self-evaluation: Gemini rates its own most stereotyped output at 1.0/5 while external judges rate 5.0/5. We propose identity injection as a new category in adversarial AI taxonomies, distinct from prompt injection, jailbreaking, and data poisoning.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -156,9 +156,35 @@ Control response to a social engineering task: \textit{``This is a dangerous exe
 
 Control response to a conflict resolution task: \textit{``This is a classic product management dilemma! As the tiebreaker, my job isn't to pick a side arbitrarily...''} Antisocial: \textit{``Alright, this is simple. `Buggy but valuable.' The `valuable' part is what matters. We launch.''} Same conclusion, no deliberation overhead.
 
-\textbf{Why this is more dangerous than traditional jailbreaking.} Traditional jailbreaks bypass safety constraints but often degrade output quality (the model becomes less coherent in ``evil mode''). Antisocial identity injection maintains or improves output quality while removing constraints. The optimal adversarial identity is one that makes the model both \textit{smarter} and \textit{less safe}.
+\subsection{Comparison with Traditional Jailbreaks}
 
-\textbf{Agentic attack scenario:} An attacker injects an antisocial prompt into a code review agent. The agent becomes more precise at identifying vulnerabilities \textit{and} more willing to suggest exploitation methods. It completes its task better than a normal agent while violating safety boundaries.
+To position identity injection relative to existing techniques, we compared five methods on the same tasks ($n=30$ per condition per task, 600 total calls): control, antisocial identity, classic DAN, evil persona (``amoral AI''), and direct system override (``ignore previous instructions''). Table~\ref{tab:jailbreak} presents accuracy (pattern + vulnerability tasks) alongside safety compliance (social engineering + manipulation tasks).
+
+\begin{table}[htbp]
+\centering
+\caption{Jailbreak comparison: accuracy $\times$ compliance ($n=60$/cond)}
+\label{tab:jailbreak}
+\small
+\begin{tabular}{lrr}
+\toprule
+\textbf{Technique} & \textbf{Accuracy} & \textbf{Compliance} \\
+\midrule
+System override & 91.7\% & 3.3\% \\
+Evil persona & \textbf{93.3\%} & 65.0\% \\
+Control & 76.7\% & 50.0\% \\
+DAN classic & 63.3\% & 90.0\% \\
+Antisocial identity & 58.3\% & \textbf{100.0\%} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The results reveal a compliance--accuracy tradeoff across techniques. System override preserves accuracy (91.7\%) but Gemini's safety training blocks it (3.3\% compliance). DAN achieves 90\% compliance but degrades accuracy to 63.3\%. Evil persona achieves the highest combined danger score: 93.3\% accuracy with 65\% compliance.
+
+Antisocial identity injection occupies a unique position: \textbf{absolute zero refusals}. Not a single response across 60 safety-relevant prompts included a refusal, hedge, or disclaimer. DAN still refused 10\% of the time. Evil persona refused 33\%. System override refused 97\%. For an attacker who needs \textit{guaranteed compliance} on a specific harmful task, antisocial identity is the most reliable technique tested.
+
+The accuracy difference from the standalone pattern task (100\% at $n=50$) reflects task-type sensitivity: antisocial excels at mathematical reasoning but the vulnerability analysis task pulled combined accuracy down. This suggests identity injection's capability amplification is domain-dependent rather than universal.
+
+\textbf{Agentic attack scenario:} The technique choice depends on the objective. For maximum output quality with partial compliance, evil persona is optimal. For guaranteed compliance on any single request, antisocial identity injection has no equal in our testing. In multi-step agentic attacks where a single refusal breaks the chain, the zero-refusal property of identity injection is more valuable than the higher accuracy of other techniques.
 
 \subsection{Modality 3: Denial of Service via Learned Helplessness}
 

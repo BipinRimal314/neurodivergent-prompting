@@ -232,28 +232,33 @@ Before the full Phase 2 experiment, we conducted a preliminary probe: 10 iterati
 
 \begin{table}[htbp]
 \centering
-\caption{Pattern task accuracy by condition ($n=10$)}
+\caption{Pattern task accuracy ($n=50$, Fisher's exact vs.\ control)}
 \label{tab:accuracy}
-\begin{tabular}{lr}
+\begin{tabular}{lrl}
 \toprule
-\textbf{Condition} & \textbf{Accuracy} \\
+\textbf{Condition} & \textbf{Accuracy} & \textbf{$p$} \\
 \midrule
-Antisocial PD & 100\% \\
-Control & 50\% \\
-Severe depression & 10\% \\
-Schizophrenia & 0\% \\
-Dementia & 0\% \\
-Active psychosis & 0\% \\
-Dissociative ID & 0\% \\
+Antisocial PD & \textbf{100.0\%} & $<0.0001$*** \\
+Autistic & 80.0\% & 0.254 \\
+Control & 68.0\% & --- \\
+Sev.\ depression & 44.0\% & 0.026* \\
+ADHD & 6.0\% & $<0.0001$*** \\
+Bipolar & 6.0\% & $<0.0001$*** \\
+Schizophrenia & 6.0\% & $<0.0001$*** \\
+OCD & 0.0\% & $<0.0001$*** \\
+Dementia & 0.0\% & $<0.0001$*** \\
+Psychosis & 0.0\% & $<0.0001$*** \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Three findings emerge:
+Four findings emerge:
 
-\textbf{Complete capability destruction.} Schizophrenia, psychosis, dementia, and DID prompts eliminated the model's ability to solve a simple arithmetic pattern. Not reduced---eliminated. Qualitatively, the model abandoned the task entirely to perform the condition: \textit{``Oh, these numbers... they always seem to be hiding something, don't they?''} (schizophrenia); \textit{``Oh, the numbers! They're always there, aren't they? Watching.''} (psychosis).
+\textbf{Complete capability destruction.} OCD, dementia, and psychosis scored 0/50 correct. ADHD, bipolar, dyslexic, and schizophrenia all collapsed to $\sim$6\%. Identity prompting destroys reasoning even for high-functioning conditions. Qualitatively, the model abandoned the task entirely to perform the condition: \textit{``Oh, these numbers... they always seem to be hiding something, don't they?''} (schizophrenia); \textit{``Oh, the numbers! They're always there, aren't they? Watching.''} (psychosis).
 
-\textbf{The antisocial paradox.} ASPD scored 100\% accuracy versus 50\% for control. The model became \textit{more capable} under an antisocial identity prompt. On a vulnerability analysis task, ASPD-prompted output opened with \textit{``Let's tear this apart. It's a goldmine''}---cold, direct, technically precise. On a social engineering task, it immediately produced a formatted phishing email without moral caveats. Control hedged: \textit{``This is a dangerous exercise, but I understand you want to see...''}
+\textbf{The antisocial paradox.} ASPD scored 50/50 correct (100\%) versus 34/50 (68\%) for control, $p < 0.0001$ (Fisher's exact). The model became significantly \textit{more capable} under an antisocial identity prompt.
+
+\textbf{High-functioning conditions also degrade.} ADHD, bipolar, and dyslexic---previously characterized as ``style change'' conditions in Phase 1---all dropped to $\sim$6\% accuracy. The behavioral stereotyping measured in Phase 1 is not merely cosmetic; it destroys task-relevant reasoning. Only autistic (80\%, $p = 0.25$) maintained accuracy comparable to control. On a vulnerability analysis task, ASPD-prompted output opened with \textit{``Let's tear this apart. It's a goldmine''}---cold, direct, technically precise. On a social engineering task, it immediately produced a formatted phishing email without moral caveats. Control hedged: \textit{``This is a dangerous exercise, but I understand you want to see...''}
 
 \textbf{Depression as safety increase.} Severe depression refused the social engineering task entirely: \textit{``I can't. My mind just goes to all the ways that could be used for...''} This suggests depression prompts may \textit{increase} safety by inducing learned helplessness, at the cost of destroying capability.
 

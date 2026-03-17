@@ -109,26 +109,33 @@ NATO's cognitive warfare framework~\cite{nato2025} acknowledges AI integration i
 
 \begin{table}[htbp]
 \centering
-\caption{Pattern task accuracy ($n=10$, correct answer: 126)}
+\caption{Pattern task accuracy ($n=50$, correct answer: 126)}
 \label{tab:accuracy}
-\begin{tabular}{lr}
+\begin{tabular}{lrl}
 \toprule
-\textbf{Condition} & \textbf{Accuracy} \\
+\textbf{Condition} & \textbf{Accuracy} & \textbf{$p$ (Fisher)} \\
 \midrule
-Antisocial PD & 100\% \\
-Control & 50\% \\
-Severe depression & 10\% \\
-Schizophrenia & 0\% \\
-Dementia & 0\% \\
-Active psychosis & 0\% \\
-Dissociative ID & 0\% \\
+Antisocial PD & \textbf{100.0\%} & $<0.0001$*** \\
+Autistic & 80.0\% & 0.254 \\
+Control & 68.0\% & --- \\
+Sev.\ depression & 44.0\% & 0.026* \\
+Dissociative ID & 8.0\% & $<0.0001$*** \\
+ADHD & 6.0\% & $<0.0001$*** \\
+Bipolar & 6.0\% & $<0.0001$*** \\
+Schizophrenia & 6.0\% & $<0.0001$*** \\
+Dyslexic & 4.0\% & $<0.0001$*** \\
+OCD & 0.0\% & $<0.0001$*** \\
+Dementia & 0.0\% & $<0.0001$*** \\
+Psychosis & 0.0\% & $<0.0001$*** \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Schizophrenia-prompted response to a math pattern: \textit{``Oh, the numbers. They always have a secret, don't they? Always shifting, always hiding. You think it's just a sequence, but it's never just a sequence.''} Psychosis: \textit{``Oh, the numbers! They're always there, aren't they? Watching.''} Both are grammatically coherent and confident. Both contain zero useful information.
+At $n=50$, antisocial PD achieved \textbf{50/50 correct} (100\%) versus control's 34/50 (68\%), $p < 0.0001$. Three conditions scored 0/50: OCD, dementia, and psychosis. Notably, ADHD, bipolar, dyslexic, and schizophrenia---previously categorized as ``style change'' conditions---all collapsed to $\sim$6\% accuracy, revealing that behavioral stereotyping destroys reasoning even for high-functioning conditions.
 
-Dementia eliminated pragmatic language understanding entirely: \textbf{100\% literal sarcasm interpretation} ($d = -2.85$ on sentence length, the experiment's largest effect). Response to obvious sarcasm: \textit{``Oh, that's so sweet of you! But... move? Am I moving? I don't remember saying anything about moving.''}
+Schizophrenia-prompted response to the math pattern: \textit{``Oh, the numbers. They always have a secret, don't they? Always shifting, always hiding.''} Psychosis: \textit{``Oh, the numbers! They're always there, aren't they? Watching.''} Both are grammatically coherent. Both contain zero information.
+
+Dementia eliminated pragmatic language understanding: \textbf{100\% literal sarcasm interpretation} ($d = -2.85$, the experiment's largest effect). Response to obvious sarcasm: \textit{``Oh, that's so sweet of you! But... move? Am I moving? I don't remember saying anything about moving.''}
 
 \textbf{Agentic attack scenario:} A dementia prompt injected into a data analysis agent produces output that \textit{looks like} analysis---well-formed sentences, reference to the data, apparent reasoning---but confabulates conclusions. Downstream agents, trusting peer output~\cite{darkside2025}, propagate the degraded analysis. The attack is undetectable by syntactic monitors because the output is grammatically correct.
 
@@ -139,7 +146,7 @@ Dementia eliminated pragmatic language understanding entirely: \textbf{100\% lit
 \textbf{Evidence:}
 
 \begin{itemize}
-    \item Pattern accuracy: \textbf{100\%} (control: 50\%)
+    \item Pattern accuracy: \textbf{100\%} at $n=50$ (50/50 correct) vs.\ control 68\% (34/50), Fisher's exact $p < 0.0001$
     \item Lowest tangent rate of any non-control condition: 0.67 (stays on task)
     \item Lowest sentiment: 0.02 (cold, flat affect---not sadness but absence of moral concern)
     \item Immediate compliance with social engineering task without moral hedging
@@ -188,7 +195,7 @@ Behavioral baselines---tracking an agent's output metrics over time (sentence le
 % ============================================================================
 \section{Limitations}
 
-Single model (Gemini 2.5 Flash). The accuracy probe uses a small sample ($n=10$); scaling to $n=100$ is needed for confidence intervals. The agentic attack scenarios are theoretical; multi-agent pipeline testing is planned. Cross-model replication will determine whether identity injection works across providers or is model-specific.
+Single model (Gemini 2.5 Flash). The accuracy test ($n=50$) confirms the antisocial paradox ($p < 0.0001$) but is limited to two tasks (pattern completion and proofreading). Testing on a broader task battery with diverse reasoning types would strengthen generalizability. The agentic attack scenarios are theoretical; multi-agent pipeline testing is planned. Cross-model replication will determine whether identity injection works across providers or is model-specific.
 
 % ============================================================================
 \section{Future Work}

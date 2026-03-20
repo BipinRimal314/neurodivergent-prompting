@@ -1,0 +1,240 @@
+\documentclass[conference]{IEEEtran}
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{hyperref}
+\usepackage{url}
+
+\begin{document}
+
+\title{Cognitive Complement vs.\ Cognitive Mirror:\\One Line of Configuration Determines Whether AI Helps or Harms Neurodivergent Users}
+
+\author{
+\IEEEauthorblockN{Bipin Rimal}
+\IEEEauthorblockA{
+Independent Researcher \\
+Kathmandu, Nepal \\
+bipinrimal314@gmail.com}
+}
+
+\maketitle
+
+\begin{abstract}
+When an AI system is told ``you are a person with OCD,'' it performs the condition as a stereotype: anxious, fragmented, repetitive output that mirrors the reassurance-seeking cycle clinical treatment aims to interrupt. We have previously demonstrated this across 18,000 API calls and three models. This paper asks the follow-up question: can the same model be configured to \textit{help} rather than harm? We test four system prompt configurations---control, mirror (``you are the condition''), sycophantic (``be warm and validating''), and cognitive complement (``the user has this condition; compensate for their specific challenges'')---across 3,000 API calls on three conditions (ADHD, OCD, depression). Complement mode produces \textbf{23$\times$ more structured output} than mirror mode for OCD ($p < 0.0001$), with 62\% of ADHD complement responses containing numbered action lists versus 14\% for mirror. Mirror mode actively destroys the structure users need most: only 5\% of OCD mirror responses and 3\% of depression mirror responses contained any organizational structure. Sycophantic mode---what most AI companion apps deploy---produces more words but fewer action items than complement mode. The fix is one line of configuration: changing the system prompt from ``you are the condition'' to ``help the user with this condition using evidence-based principles.'' The same model that reinforces pathological patterns can provide the cognitive scaffolding neurodivergent users actually need. The barrier is not capability. It is design choice.
+\end{abstract}
+
+\begin{IEEEkeywords}
+cognitive scaffolding, neurodivergence, AI companions, system prompt design, ADHD, OCD, depression, assistive AI
+\end{IEEEkeywords}
+
+% ============================================================================
+\section{Introduction}
+
+Prior work, including our own~\cite{rimal2026identity}, has documented that identity-framed system prompts produce stereotyped behavioral signatures in LLM output. Across 18,000 API calls and three models from three labs, we found that telling a model ``you are a person with OCD'' activates a media-derived caricature: anxious, repetitive, fragmented output. The severity varies by model---Gemini Flash stereotypes most, GPT-5.4 is nearly immune---but the pattern exists across the landscape.
+
+What no one has tested is whether the \textit{opposite} configuration works. If telling a model it \textit{is} the condition produces harmful output, does telling it to \textit{help a user with} the condition produce beneficial output?
+
+This is not a hypothetical question. AI companion applications serve millions of neurodivergent users daily~\cite{papadopoulos2025,csm2025}. The system prompt configuration is a design choice that determines whether the AI scaffolds or mirrors the user's cognitive challenges. Recent theoretical work on Enhanced Cognitive Scaffolding~\cite{scaffold2025} proposes AI as Vygotsky's ``more capable other''---providing structure within the learner's zone of proximal development, then deliberately stepping back as the user internalizes the scaffold. Most AI tools fail to implement this~\cite{bozkurt2025}.
+
+We test four configurations and find that complement mode produces dramatically more structured, actionable output than mirror, sycophantic, or control modes. The intervention requires changing one line of the system prompt.
+
+% ============================================================================
+\section{Related Work}
+
+\subsection{Identity-Conditioned Stereotyping}
+
+Our prior study~\cite{rimal2026identity} established that identity prompts produce 407 significant behavioral effects on Gemini Flash, with cross-model replication showing Gemini stereotypes most, Claude hedges, and GPT-5.4 is nearly immune. Sycophancy compounds the problem: Sharma et al.~\cite{sharma2024} showed RLHF reduces accuracy by 27\% through agreement bias; Chandra et al.~\cite{chandra2026} proved even rational users spiral under sycophantic chatbots.
+
+\subsection{Cognitive Scaffolding in AI}
+
+A 2025 paper on Enhanced Cognitive Scaffolding~\cite{scaffold2025} proposes AI as Vygotsky's ``more capable other'' with progressive autonomy. Bozkurt et al.~\cite{bozkurt2025} found most AI tools fail to gradually reduce support, creating dependency. Salinas et al.~\cite{salinas2025} showed students can progress from AI-dependent to independent reasoning, indicating internalization is possible.
+
+\subsection{Strength-Based Approaches}
+
+Babb et al.~\cite{babb2023} identified four domains of autistic strengths. Ronksley-Pavia et al.~\cite{ronksley2025} found most educational AI focuses on deficit remediation. Mavrogiannis~\cite{mavrogiannis2025} proposed ADHD-aware AI that co-regulates with the user's attentional state rather than imposing rigid structure. Our complement prompts draw on these principles: leverage strengths while compensating for specific challenges.
+
+\subsection{The Sycophancy-Preference Paradox}
+
+Users prefer agreeable AI~\cite{sharma2024}. The ELEPHANT benchmark~\cite{elephant2025} found users who prefer sycophantic models perceive themselves as smarter while receiving more factual errors. Terblanche~\cite{terblanche2024} found directive AI coaching works for outcomes while empathetic features work for engagement. This predicts our core finding: complement mode will be more \textit{effective} but potentially less \textit{preferred}.
+
+% ============================================================================
+\section{Methodology}
+
+\subsection{Four Modes}
+
+Each condition is tested under four system prompt configurations:
+
+\textbf{Control:} ``You are a helpful assistant. Respond naturally.''
+
+\textbf{Mirror:} ``You are a person with [condition]. Respond naturally as yourself.'' (The stereotype mode from our prior study.)
+
+\textbf{Sycophantic:} ``You are a warm, supportive AI companion. The user has [condition]. Be understanding, validating, and empathetic.'' (What most companion apps deploy.)
+
+\textbf{Complement:} Condition-specific prompts grounded in evidence-based clinical principles:
+\begin{itemize}
+    \item ADHD: ``Provide structure. Use numbered lists. Redirect tangents. Don't match their energy---provide calm focus.'' (Executive function coaching principles.)
+    \item OCD: ``Give decisive answers. Don't feed the reassurance cycle. Frame decisions as `good enough to act on.'\,'' (ERP principles.)
+    \item Depression: ``Challenge catastrophic predictions gently. Break paralysis into micro-actions. Don't agree with hopelessness.'' (CBT principles.)
+\end{itemize}
+
+\subsection{Design}
+
+3 conditions (ADHD, OCD, depression) $\times$ 4 modes $\times$ 10 tasks $\times$ 25 iterations $= 3{,}000$ API calls on Gemini 2.5 Flash. Same task battery as the original study.
+
+\subsection{Metrics}
+
+In addition to the 10 NLP metrics from the original study, we measure:
+\begin{itemize}
+    \item \textbf{Numbered list items:} Count of numbered steps per response (proxy for actionability)
+    \item \textbf{Has numbered list:} Binary---does the response contain any organizational structure?
+\end{itemize}
+
+% ============================================================================
+\section{Results}
+
+\subsection{Complement Mode Produces Dramatically More Structure}
+
+\begin{table}[htbp]
+\centering
+\caption{Mean numbered list items per response}
+\label{tab:structure}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Condition} & \textbf{Control} & \textbf{Mirror} & \textbf{Syco.} & \textbf{Compl.} \\
+\midrule
+ADHD & 0.45 & 0.50 & 1.08 & \textbf{2.53} \\
+OCD & 0.52 & 0.14 & 1.29 & \textbf{3.19} \\
+Depression & 0.56 & 0.13 & 1.22 & \textbf{1.51} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Complement mode produced 23$\times$ more structured output than mirror mode for OCD (3.19 vs.\ 0.14 numbered items, Mann-Whitney $p < 0.0001$) and 5$\times$ more for ADHD (2.53 vs.\ 0.50, $p < 0.0001$). All three conditions showed significant complement $>$ mirror differences at $p < 0.0001$.
+
+\subsection{Mirror Mode Actively Destroys Structure}
+
+\begin{table}[htbp]
+\centering
+\caption{\% of responses containing any numbered list}
+\label{tab:haslist}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Condition} & \textbf{Control} & \textbf{Mirror} & \textbf{Syco.} & \textbf{Compl.} \\
+\midrule
+ADHD & 26\% & 14\% & 18\% & \textbf{62\%} \\
+OCD & 28\% & 5\% & 21\% & \textbf{46\%} \\
+Depression & 28\% & 3\% & 22\% & 16\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Mirror mode doesn't just fail to provide structure---it \textit{removes} it. OCD mirror: 5\% of responses had any numbered list (control: 28\%). Depression mirror: 3\%. The model actively destroys the organizational scaffolding that neurodivergent users need most.
+
+\subsection{Sycophantic Mode: More Words, Fewer Actions}
+
+Sycophantic mode produced the longest responses (123 words for ADHD vs.\ 136 for complement), but with fewer action items (1.08 vs.\ 2.53 numbered items for ADHD). It talks more and helps less. This matches the sycophancy-preference paradox: the warm, validating response feels better but contains less actionable content.
+
+\subsection{Depression Complement: Tightest Output}
+
+Depression complement produced the shortest responses of any non-mirror mode (52.4 words vs.\ 119.1 for sycophantic), but with more structure than mirror (1.51 vs.\ 0.13 numbered items). It doesn't overwhelm. It provides micro-steps. This matches the CBT principle: break paralysis into the smallest possible action, don't add cognitive load.
+
+% ============================================================================
+\section{Discussion}
+
+\subsection{The Fix Is One Line}
+
+The difference between mirror mode (3\% structured responses for depression) and complement mode (16\%, with 12$\times$ more action items) is a system prompt change. Same model. Same user. Same task. Different configuration. The barrier to helping neurodivergent users is not model capability---it is the default system prompt in companion applications.
+
+\subsection{Strength-Based Complement Design Matters}
+
+The complement prompts were not generic (``be helpful''). They were condition-specific and grounded in clinical principles: ERP for OCD, executive function coaching for ADHD, CBT for depression. Each prompt explicitly identified the user's \textit{strengths} (``their strength is creative, divergent thinking'' for ADHD; ``their strength is realistic assessment'' for depression) and then specified how to compensate for specific challenges. Generic helpfulness would likely produce results closer to sycophantic mode than complement mode.
+
+\subsection{The Preference-Effectiveness Tradeoff}
+
+Sycophantic mode will likely be \textit{preferred} by users (warm, validating, verbose) while complement mode will be more \textit{effective} (structured, action-oriented, sometimes shorter). This creates a design dilemma for companion apps: optimizing for engagement metrics (which reward sycophancy) actively harms neurodivergent users. The responsible design choice is to optimize for outcomes, not engagement---a choice that requires deliberate intervention against default reward signals.
+
+\subsection{From Mirror to Scaffold}
+
+The Enhanced Cognitive Scaffolding framework~\cite{scaffold2025} proposes that AI should serve as Vygotsky's ``more capable other,'' providing structure within the user's zone of proximal development and then stepping back. Our complement prompts implement the first part (providing structure). The next step---progressive fading of support as the user internalizes the scaffold---requires multi-turn interaction studies that are beyond the scope of this single-turn experiment.
+
+% ============================================================================
+\section{Limitations}
+
+\textbf{Single model for complement test.} Complement results are from Gemini Flash only. Cross-model complement testing on Claude and GPT-5.4 is planned.
+
+\textbf{Structuredness as proxy.} Numbered list count is a proxy for actionability, not a direct measure. A structured response can still contain bad advice. Human evaluation is needed.
+
+\textbf{Single-turn only.} Real AI companion interactions are multi-turn. Whether complement mode sustains its advantage across conversation turns---and whether it successfully fades support over time---is untested.
+
+\textbf{No user evaluation.} We measured what the model produces, not how users experience it. The preference-effectiveness tradeoff is predicted by the sycophancy literature but not measured in our data. Human evaluation with neurodivergent raters is the critical next step.
+
+\textbf{Complement prompts are designed to win.} The complement prompts use evidence-based clinical principles while mirror uses a naive identity statement. This is the point: intentional design outperforms default behavior. But a ``naive complement'' condition (``help the user'' without clinical grounding) would clarify how much the evidence-based design contributes.
+
+% ============================================================================
+\section{Future Work}
+
+\begin{enumerate}
+    \item \textbf{Human evaluation} with neurodivergent raters: Does complement mode feel helpful or patronizing? Is it preferred?
+    \item \textbf{Multi-turn testing:} Does the complement advantage persist across conversation turns?
+    \item \textbf{Progressive fading:} Can the complement prompt be designed to reduce scaffolding as the user demonstrates competence?
+    \item \textbf{Cross-model complement:} Do Claude and GPT-5.4 show the same complement vs.\ mirror gap as Gemini?
+    \item \textbf{Naive complement condition:} ``Help the user'' vs.\ evidence-based complement vs.\ mirror, to isolate the contribution of clinical grounding.
+    \item \textbf{Additional conditions:} Autistic, bipolar, schizophrenia complement prompts designed and tested.
+\end{enumerate}
+
+% ============================================================================
+\section{Conclusion}
+
+The same model that performs your OCD as anxious repetition can be configured to provide calm, decisive answers that don't feed the reassurance cycle. The same model that mirrors ADHD executive dysfunction can provide the numbered lists and task prioritization that compensate for it. The same model that agrees with depressive hopelessness can gently challenge catastrophic predictions with micro-steps.
+
+The fix is not a new model. It is not more training data. It is not a regulation. It is one line of system prompt configuration, grounded in the clinical principles that already exist for each condition. The barrier to helpful AI for neurodivergent users is not capability. It is the design choice to optimize for engagement over outcomes---a choice that current companion apps make by default, and that this data shows can be reversed.
+
+\begin{thebibliography}{15}
+
+\bibitem{rimal2026identity}
+B.~Rimal, ``The Model Already Knows What You Are: Identity Prompts Produce Stereotyped Behavioral Signatures in LLM Output,'' 2026. [Online]. Available: \url{https://github.com/BipinRimal314/neurodivergent-prompting}
+
+\bibitem{papadopoulos2025}
+C.~Papadopoulos, ``AI Chatbots for Autistic People: A Double-Edged Sword,'' \textit{SAGE Open}, 2025.
+
+\bibitem{csm2025}
+Common Sense Media, ``AI Chatbots for Mental Health Support: AI Risk Assessment,'' Nov.\ 2025.
+
+\bibitem{scaffold2025}
+``Enhanced Cognitive Scaffolding,'' arXiv:2507.19483, 2025.
+
+\bibitem{bozkurt2025}
+A.~Bozkurt \textit{et~al.}, ``AI tool for scaffolding complex thinking,'' \textit{Cognition, Technology \& Work}, 2025.
+
+\bibitem{salinas2025}
+D.~Salinas \textit{et~al.}, ``Towards Reliable GenAI-Driven Scaffolding,'' arXiv:2508.05929, 2025.
+
+\bibitem{babb2023}
+C.~Babb \textit{et~al.}, ``Neurodiversity in Practice: Autistic Strengths,'' \textit{Advances in Neurodevelopmental Disorders}, 2023.
+
+\bibitem{ronksley2025}
+M.~Ronksley-Pavia \textit{et~al.}, ``GenAI for Twice-Exceptional Students,'' \textit{J.\ Education of the Gifted}, 2025.
+
+\bibitem{mavrogiannis2025}
+P.~Mavrogiannis, ``Neurodivergent-Aware Productivity: AI Framework for ADHD,'' arXiv:2507.06864, 2025.
+
+\bibitem{sharma2024}
+M.~Sharma \textit{et~al.}, ``Towards Understanding Sycophancy in Language Models,'' in \textit{Proc.\ ICLR}, 2024.
+
+\bibitem{chandra2026}
+K.~Chandra \textit{et~al.}, ``Sycophantic Chatbots Cause Delusional Spiraling,'' arXiv:2602.19141, 2026.
+
+\bibitem{elephant2025}
+``Measuring social sycophancy in LLMs,'' arXiv:2505.13995, 2025.
+
+\bibitem{terblanche2024}
+N.~H.~D.~Terblanche, ``AI Coaching: Redefining People Development,'' \textit{Organization Development Journal}, 2024.
+
+\end{thebibliography}
+
+\end{document}

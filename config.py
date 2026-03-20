@@ -156,7 +156,7 @@ MODELS = {
         "env_key": "ANTHROPIC_API_KEY",
     },
     "gpt4": {
-        "model_id": "gpt-4o",
+        "model_id": "gpt-5.4",
         "provider": "openai",
         "env_key": "OPENAI_API_KEY",
     },

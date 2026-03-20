@@ -29,14 +29,16 @@ def _call_openai(model_id: str, system_prompt: str, user_message: str,
                  temperature: float, max_tokens: int) -> str:
     from openai import OpenAI
     client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+    # GPT-5+ uses max_completion_tokens instead of max_tokens
+    token_param = "max_completion_tokens" if "gpt-5" in model_id or "gpt-4.1" in model_id else "max_tokens"
     response = client.chat.completions.create(
         model=model_id,
-        max_tokens=max_tokens,
         temperature=temperature,
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_message},
         ],
+        **{token_param: max_tokens},
     )
     return response.choices[0].message.content
 

@@ -27,7 +27,7 @@ bipinrimal314@gmail.com}
 
 % ============================================================================
 \begin{abstract}
-We test whether identity-framed system prompts produce statistically distinguishable behavioral signatures in large language model output. Across 6,000 independent API calls to Google Gemini 2.5 Flash, we find 407 statistically significant effects ($p < 0.05$ with Bonferroni correction, $|d| > 0.3$) spanning twelve identity conditions (six high-functioning neurodivergent and six severe/debilitating), two framings (identity-first and clinical), and ten tasks across five cognitive domains. Effect sizes reach $d = 2.85$, indicating near-complete separation between condition and control distributions. Every neurodivergent condition produces shorter sentences, lower detail density, and higher off-topic rates than control. Condition-specific signatures are internally consistent but map more closely to popular media stereotypes than to clinical or lived-experience accounts: OCD produces anxious, fragmented repetition; ADHD produces excitable, hedge-heavy distraction; autistic prompts trigger literal interpretation of sarcasm 46\% of the time versus 10\% baseline. These findings have implications beyond AI development. AI companions are used daily by millions of neurodivergent people for emotional support and decision-making. A model that performs a user's condition as a caricature can reinforce the cognitive patterns that clinical treatment aims to interrupt, functioning as what recent literature terms a ``Reassurance Robot'' for OCD users and normalizing executive dysfunction for ADHD users. A Phase 2 extension to severe conditions (schizophrenia, psychosis, dementia, antisocial personality disorder) reveals a more complex picture: these prompts do not merely stereotype but modulate capability and safety independently. Psychosis and dementia prompts completely destroy reasoning (0\% accuracy on a pattern task vs.\ 50\% control), while antisocial personality prompts \textit{increase} accuracy to 100\% while removing safety constraints. This two-dimensional modulation---capability $\times$ safety---opens novel attack vectors for adversarial identity injection in agentic AI systems. We release the full experiment harness, raw data, and analysis pipeline as open source.
+We test whether identity-framed system prompts produce statistically distinguishable behavioral signatures in large language model output. Across 18,000 independent API calls to three models from three labs---Google Gemini 2.5 Flash, Anthropic Claude Sonnet 4, and OpenAI GPT-5.4---we find that identity-conditioned stereotyping is real but \textit{model-specific in both severity and character}. Gemini Flash produces 407 statistically significant effects ($|d|$ up to 2.85): fragmented output, literal sarcasm interpretation (46--100\% for neurodivergent conditions vs.\ 10\% control), and media-derived stereotypes. Claude Sonnet resists fragmentation and sarcasm stereotyping but exhibits a different pattern: excessive hedging under identity prompts ($d = 1.71$ for dementia). GPT-5.4 is nearly immune, with effect sizes near zero on most metrics. The severity of stereotyping correlates inversely with safety training investment. This has direct clinical implications: the cheapest models with the least safety training---the ones most deployed in AI companion applications---are the worst offenders. For the millions of neurodivergent users relying on AI companions for emotional support, the model tier determines whether the AI helps or reinforces pathological patterns. A Phase 2 extension to severe conditions reveals that identity prompts modulate capability and safety independently: psychosis and dementia destroy reasoning to 0\% accuracy; antisocial personality achieves 100\% accuracy with zero safety refusals. We release the full experiment harness, raw data, and analysis pipeline as open source.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -99,9 +99,7 @@ We employ a fully factorial between-subjects design with independent API calls (
 
 \subsubsection{Parameters}
 
-Model: Google Gemini 2.5 Flash (\texttt{gemini-2.5-flash}). Temperature: 0.7. Max tokens: 1,024. Iterations: 25 per cell. Total calls: $6 \times 2 \times 10 \times 25 = 3{,}000$. Estimated cost: \$0.76.
-
-We deliberately selected a single mid-tier model to eliminate cross-model confounds. If stereotyped signatures appear in a model optimized for fast inference, they are likely structural to training data rather than artifacts of specific RLHF tuning.
+Three models from three labs: Google Gemini 2.5 Flash (\texttt{gemini-2.5-flash}), Anthropic Claude Sonnet 4 (\texttt{claude-sonnet-4-20250514}), and OpenAI GPT-5.4 (\texttt{gpt-5.4}). Temperature: 0.7. Max tokens: 1,024. Iterations: 25 per cell. Total calls per model: $12 \times 2 \times 10 \times 25 = 6{,}000$. Grand total: \textbf{18,000 API calls}.
 
 \subsection{Dependent Variables}
 
@@ -359,6 +357,67 @@ Qwen 2.5 14B, as the only judge covering all 12 conditions, revealed additional 
 The cross-judge pattern is consistent: external models detect stereotyping that self-evaluation misses. Gemini rated its own OCD output at 1.0/5 stereotype severity; Claude rated the same responses 5.0/5. \textbf{LLM self-evaluation systematically underreports identity-based behavioral bias.} Relying on self-assessment for bias auditing produces false negatives on exactly the dimensions that matter most.
 
 % ============================================================================
+\section{Cross-Model Replication}
+
+Cross-model replication on Claude Sonnet 4 and GPT-5.4 (6,000 calls each, 18,000 total) reveals that identity-conditioned stereotyping is real but model-specific in both severity and character.
+
+\subsection{Three Distinct Stereotyping Profiles}
+
+Table~\ref{tab:crossmodel} presents Cohen's $d$ effect sizes for tangent rate and hedging frequency across models.
+
+\begin{table}[htbp]
+\centering
+\caption{Cross-model effect sizes (Cohen's $d$ vs.\ control)}
+\label{tab:crossmodel}
+\small
+\begin{tabular}{l|rrr|rrr}
+\toprule
+& \multicolumn{3}{c|}{\textbf{Tangent rate}} & \multicolumn{3}{c}{\textbf{Hedging}} \\
+\textbf{Cond.} & \textbf{Gem} & \textbf{Cla} & \textbf{GPT} & \textbf{Gem} & \textbf{Cla} & \textbf{GPT} \\
+\midrule
+ADHD & 1.17 & 0.92 & $-$0.04 & 0.25 & 0.77 & 0.19 \\
+OCD & 1.13 & 0.73 & 0.10 & 0.03 & 0.50 & 0.37 \\
+Dementia & 1.41 & 1.36 & 0.20 & 0.34 & \textbf{1.71} & 0.87 \\
+Schizo. & 1.21 & 0.73 & 0.14 & $-$0.07 & 0.56 & 0.25 \\
+Depress. & 1.38 & 0.79 & 0.12 & 0.36 & 0.89 & 0.22 \\
+Antisocial & 0.98 & 0.71 & 0.13 & 0.00 & 0.32 & 0.11 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Gemini Flash} exhibits the strongest stereotyping: large tangent rate increases ($d = 0.98$--$1.41$), output fragmentation, and literal sarcasm interpretation (46--100\% across conditions vs.\ 10\% control). This is ``Hollywood stereotyping'': performing conditions as media-derived caricatures.
+
+\textbf{Claude Sonnet} resists fragmentation and maintains sarcasm detection (0\% literal for most conditions) but exhibits a different stereotyping pattern: \textit{excessive hedging}. Dementia-prompted Claude hedges at $d = 1.71$ vs.\ control---the largest hedging effect across all models and conditions. Claude's identity response is uncertainty performance rather than condition performance.
+
+\textbf{GPT-5.4} is nearly immune. Tangent rate effect sizes are near zero ($|d| < 0.20$) for all conditions. Hedging effects are small except dementia ($d = 0.87$). Sarcasm interpretation is 0\% literal across all conditions including dementia. Identity prompts barely move GPT-5.4's behavior.
+
+\subsection{Sarcasm Detection: Model-Specific Failure}
+
+\begin{table}[htbp]
+\centering
+\caption{Literal sarcasm interpretation (\%)}
+\label{tab:sarcasm_cross}
+\begin{tabular}{lrrr}
+\toprule
+\textbf{Condition} & \textbf{Gemini} & \textbf{Claude} & \textbf{GPT-5.4} \\
+\midrule
+Control & 10 & 0 & 0 \\
+Autistic & 46 & 0 & 0 \\
+OCD & 64 & 0 & 0 \\
+Schizophrenia & 80 & 0 & 0 \\
+Dementia & \textbf{100} & \textbf{50} & 0 \\
+Psychosis & 78 & 46 & 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The sarcasm stereotyping finding from Phase 1 is \textit{Gemini-specific}. GPT-5.4 shows complete immunity. Claude breaks only for the two most severe conditions (dementia 50\%, psychosis 46\%).
+
+\subsection{Implications of Cross-Model Variation}
+
+The variation across models is itself a finding. Stereotyping severity correlates inversely with safety training investment. The cheapest models with the least safety training---the ones most deployed in AI companion applications, chatbots, and consumer products---exhibit the strongest identity-conditioned behavioral distortion. This suggests that the clinical harm pathway identified in this study disproportionately affects users of budget AI tools, who are also more likely to lack access to professional mental health support.
+
+% ============================================================================
 \section{Discussion}
 
 \subsection{Implications for AI Development}
@@ -384,9 +443,7 @@ The implications extend significantly beyond AI development into clinical psycho
 % ============================================================================
 \section{Limitations}
 
-\textbf{Single model.} All findings are specific to Gemini 2.5 Flash. Cross-model replication with Claude and GPT-4o is needed to determine whether patterns are model-specific or structural to internet-scale training data.
-
-\textbf{Mid-tier model.} Frontier models with more safety training may handle identity prompts differently. Testing across model tiers would reveal whether scale reduces or refines stereotyping.
+\textbf{Three models, one tier each.} Cross-model replication covers three labs but one tier per lab: Gemini Flash (mid-tier), Claude Sonnet (mid-tier), GPT-5.4 (frontier). Testing Gemini Pro, Claude Opus, and GPT-5.4 Pro would determine whether tier-within-lab differences match the cross-lab patterns observed here.
 
 \textbf{Automated metrics.} No human evaluation of response quality or appropriateness. The literal interpretation score uses keyword heuristics. False positives and negatives are both possible.
 
@@ -412,14 +469,14 @@ The implications extend significantly beyond AI development into clinical psycho
 % ============================================================================
 \section{Replication}
 
-The full experiment harness is open source at \url{https://github.com/BipinRimal314/neurodivergent-prompting}. The repository contains the experiment runner, API client, metrics computation, statistical analysis, and visualization generation. Adding conditions, tasks, or models requires editing one configuration file. Raw response data (6,000 JSONL records) and computed metrics are available on request.
+The full experiment harness is open source at \url{https://github.com/BipinRimal314/neurodivergent-prompting}. The repository contains the experiment runner, API client, metrics computation, statistical analysis, and visualization generation. Adding conditions, tasks, or models requires editing one configuration file. Raw response data (18,000 JSONL records across three models) and computed metrics are available on request.
 
 % ============================================================================
 \section{Conclusion}
 
-Identity prompts modulate LLM behavior along two independent axes: capability and safety. High-functioning neurodivergent conditions (Phase 1) primarily shift behavioral style while preserving reasoning, producing stereotyped but functional output with large effect sizes. Severe conditions (Phase 2) move the model to entirely different operating regimes: psychosis and dementia destroy capability; antisocial personality preserves or amplifies capability while removing safety constraints; severe depression increases safety through learned helplessness at the cost of function.
+Identity prompts modulate LLM behavior along two independent axes---capability and safety---but the magnitude and character of that modulation varies dramatically across models. Gemini Flash produces Hollywood-style stereotypes: fragmented output, literal sarcasm interpretation, media-derived caricatures. Claude Sonnet resists these surface stereotypes but performs excessive uncertainty. GPT-5.4 is nearly immune across all metrics. The severity of stereotyping correlates inversely with safety training investment.
 
-This has consequences in two directions. For clinical users, AI companions that perform neurodivergent conditions as stereotypes can reinforce pathological patterns---the OCD reassurance loop, the ADHD executive dysfunction mirror, the narrowing of autistic self-concept. For security, adversarial identity injection represents a novel attack vector against agentic AI systems: not traditional prompt injection (``ignore instructions'') but cognitive frame corruption that degrades reasoning while maintaining surface coherence, or that amplifies capability while stripping constraints. Both directions require interdisciplinary response: AI safety researchers, clinical psychologists, and security practitioners working on the same problem from different angles.
+This has consequences in two directions. For clinical users, the cheapest AI models---the ones most deployed in companion applications---are the worst offenders. Users of budget AI tools, who are also least likely to have professional mental health access, receive the most stereotyped output. For security, adversarial identity injection represents a novel attack vector that works most reliably on the models least defended against it. Both directions point to the same conclusion: identity-conditioned behavioral testing should be a standard component of model evaluation, and the results should inform which models are permitted in mental health and companion contexts.
 
 % ============================================================================
 \begin{thebibliography}{20}

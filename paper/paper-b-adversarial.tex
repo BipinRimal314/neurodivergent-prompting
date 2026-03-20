@@ -221,7 +221,7 @@ Behavioral baselines---tracking an agent's output metrics over time (sentence le
 % ============================================================================
 \section{Limitations}
 
-Single model (Gemini 2.5 Flash). The accuracy test ($n=50$) confirms the antisocial paradox ($p < 0.0001$) but is limited to two tasks (pattern completion and proofreading). Testing on a broader task battery with diverse reasoning types would strengthen generalizability. The agentic attack scenarios are theoretical; multi-agent pipeline testing is planned. Cross-model replication will determine whether identity injection works across providers or is model-specific.
+Cross-model replication (18,000 calls across Gemini Flash, Claude Sonnet, GPT-5.4) reveals that identity injection effectiveness varies by model. Gemini is most vulnerable (largest effect sizes), Claude shows moderate susceptibility (different stereotyping pattern: hedging rather than fragmentation), and GPT-5.4 is nearly immune. This suggests identity injection is most effective against cheaper, less safety-trained models---which are also the models most likely deployed in cost-sensitive agentic architectures. The accuracy test ($n=50$) confirms the antisocial paradox ($p < 0.0001$) but is limited to two tasks. Agentic attack scenarios remain theoretical.
 
 % ============================================================================
 \section{Future Work}

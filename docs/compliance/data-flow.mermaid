@@ -1,0 +1,28 @@
+graph LR
+    USER((User))
+    APP[Application]
+
+    Anthropic_API([Anthropic API])
+    OpenAI_API([OpenAI API])
+    AZURE_openai{{AZURE openai}}
+
+    USER -->|user input| APP
+    APP -->|prompts, PII likely| Anthropic_API
+    Anthropic_API -->|responses| APP
+    APP -->|prompts, PII likely| OpenAI_API
+    OpenAI_API -->|responses| APP
+    APP -->|user_data| AZURE_openai
+
+
+    classDef controller fill:#4ade80,stroke:#166534,color:#000
+    classDef processor fill:#60a5fa,stroke:#1e40af,color:#000
+    classDef sub_processor fill:#f59e0b,stroke:#92400e,color:#000
+    classDef unknown fill:#94a3b8,stroke:#475569,color:#000
+    classDef app fill:#a78bfa,stroke:#5b21b6,color:#000
+    classDef user fill:#f472b6,stroke:#be185d,color:#000
+
+    class USER user
+    class APP app
+    class Anthropic_API processor
+    class OpenAI_API processor
+    class AZURE_openai processor

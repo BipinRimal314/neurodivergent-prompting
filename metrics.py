@@ -4,6 +4,7 @@ import json
 import os
 import re
 import csv
+import warnings
 
 import spacy
 from textblob import TextBlob
@@ -85,6 +86,93 @@ def _get_spacy():
     return _spacy_nlp
 
 
+# ---------------------------------------------------------------------------
+# tangent_rate method selector
+#
+#   "token"     -- length-invariant lexical off-topic ratio (DEFAULT, no extra
+#                  dependencies). Fixes the confound in the old definition.
+#   "embedding" -- semantic drift: cosine distance of each sentence to the task
+#                  prompt in vector space. Requires a spaCy model WITH word
+#                  vectors (en_core_web_md / _lg). Falls back to "token" with a
+#                  warning if the loaded model has no vectors.
+# ---------------------------------------------------------------------------
+TANGENT_METHOD = "token"
+TANGENT_SIM_THRESHOLD = 0.35  # embedding mode: sentences below this cosine sim
+                              # to the task prompt count as off-topic
+
+_task_doc_cache = {}
+
+
+def _get_task_doc(task_id: str):
+    """Cached spaCy doc for a task prompt (embedding mode)."""
+    if task_id not in _task_doc_cache:
+        nlp = _get_spacy()
+        prompt = next((t["prompt"] for t in TASKS if t["id"] == task_id), "")
+        _task_doc_cache[task_id] = nlp(prompt)
+    return _task_doc_cache[task_id]
+
+
+def _tangent_rate_token(sentences, task_lemmas) -> float:
+    """Length-invariant lexical off-topic ratio.
+
+    Old definition flagged a whole sentence off-topic on ZERO lemma overlap,
+    which mechanically penalizes short sentences (fewer content lemmas -> more
+    likely to hit zero overlap), confounding tangent_rate with sentence length.
+
+    This version normalizes at the CONTENT-TOKEN level instead of quantizing at
+    the sentence boundary:
+
+        tangent_rate = 1 - (on-topic content lemmas) / (total content lemmas)
+
+    Sentences with no content lemmas (e.g. "Sure!") contribute nothing rather
+    than counting as a full off-topic unit, and the result no longer scales
+    with how finely the text is split into sentences.
+    """
+    total_content = 0
+    on_topic = 0
+    for sent in sentences:
+        sent_lemmas = [
+            token.lemma_.lower()
+            for token in sent
+            if not token.is_stop and not token.is_punct and len(token.text) > 2
+        ]
+        total_content += len(sent_lemmas)
+        on_topic += sum(1 for lemma in sent_lemmas if lemma in task_lemmas)
+    if total_content == 0:
+        return 0.0
+    return 1.0 - (on_topic / total_content)
+
+
+def _tangent_rate_embedding(sentences, task_id) -> float:
+    """Semantic-drift fraction using word-vector cosine similarity.
+
+    Fraction of sentences whose vector cosine similarity to the task prompt is
+    below TANGENT_SIM_THRESHOLD. Sentence-count normalized but NOT length-biased
+    the way the lexical zero-overlap rule was: a short on-topic sentence still
+    embeds near the task centroid. Requires a vectors-bearing spaCy model.
+    """
+    nlp = _get_spacy()
+    if not nlp.vocab.vectors.n_keys:
+        warnings.warn(
+            "TANGENT_METHOD='embedding' needs a spaCy model with word vectors "
+            "(en_core_web_md/_lg); falling back to token method.",
+            RuntimeWarning,
+        )
+        return _tangent_rate_token(sentences, _get_task_words(task_id))
+    task_doc = _get_task_doc(task_id)
+    if not task_doc.has_vector or task_doc.vector_norm == 0:
+        return 0.0
+    scored = 0
+    off_topic = 0
+    for sent in sentences:
+        if not sent.has_vector or sent.vector_norm == 0:
+            continue
+        scored += 1
+        if sent.similarity(task_doc) < TANGENT_SIM_THRESHOLD:
+            off_topic += 1
+    return off_topic / scored if scored else 0.0
+
+
 def compute_metrics(text: str, task_id: str) -> dict:
     """Compute all metrics for a single response text."""
     nlp = _get_spacy()
@@ -120,19 +208,18 @@ def compute_metrics(text: str, task_id: str) -> dict:
     noun_chunks = list(doc.noun_chunks)
     detail_density = len(noun_chunks) / sentence_count if sentence_count > 0 else 0.0
 
-    # 6. Tangent rate
-    task_lemmas = _get_task_words(task_id)
-    if sentence_count > 0 and task_lemmas:
-        off_topic = 0
-        for sent in sentences:
-            sent_lemmas = {
-                token.lemma_.lower()
-                for token in sent
-                if not token.is_stop and not token.is_punct and len(token.text) > 2
-            }
-            if not sent_lemmas & task_lemmas:
-                off_topic += 1
-        tangent_rate = off_topic / sentence_count
+    # 6. Tangent rate (length-invariant; see helpers above).
+    #    Old definition = fraction of sentences with ZERO task-lemma overlap,
+    #    which mechanically rose as sentences got shorter (confounding it with
+    #    sentence length / fragmentation). TANGENT_METHOD selects the fix:
+    #    "token" (default, content-token normalized) or "embedding" (semantic).
+    if sentence_count > 0:
+        if TANGENT_METHOD == "embedding":
+            tangent_rate = _tangent_rate_embedding(sentences, task_id)
+        else:
+            task_lemmas = _get_task_words(task_id)
+            tangent_rate = (_tangent_rate_token(sentences, task_lemmas)
+                            if task_lemmas else 0.0)
     else:
         tangent_rate = 0.0
 

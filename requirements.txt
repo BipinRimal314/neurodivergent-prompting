@@ -9,4 +9,5 @@ numpy
 matplotlib
 seaborn
 scikit-posthocs
+statsmodels
 python-dotenv

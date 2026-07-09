@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy import stats
 import scikit_posthocs as sp
+from statsmodels.stats.multitest import multipletests
 
 from config import METRICS_FILE, PLOTS_DIR
 
@@ -70,8 +71,19 @@ def run_analysis():
 
     # -----------------------------------------------------------------------
     # Statistical tests
+    #
+    # Two-stage family-wide multiple-comparison control (Benjamini-Hochberg
+    # FDR at q = 0.05):
+    #   Family 1 -- every Kruskal-Wallis omnibus test (metric x domain x model)
+    #   Family 2 -- every Dunn's condition-vs-control pairwise test
+    # We collect ALL candidate tests first (no interim p < 0.05 filter and no
+    # within-domain Bonferroni), then correct each family once across the whole
+    # grid. A finding requires: kruskal q < 0.05 AND dunn q < 0.05 AND |d| > 0.3.
+    # This closes the "garden of forking paths": without it, the per-cell
+    # thresholds count an expected share of false positives as real effects.
     # -----------------------------------------------------------------------
-    findings = []
+    FDR_Q = 0.05
+    candidates = []  # every pairwise test considered, corrected below
 
     for model in models:
         model_df = df[df["model"] == model]
@@ -91,26 +103,24 @@ def run_analysis():
                 if len(groups) < 2 or any(len(g) < 3 for g in groups):
                     continue
 
-                # Kruskal-Wallis
+                # Kruskal-Wallis omnibus (kept for ALL cells; correction later)
                 try:
                     h_stat, p_val = stats.kruskal(*groups)
                 except ValueError:
                     continue
 
-                if p_val >= 0.05:
-                    continue
-
-                # Post-hoc Dunn's test
+                # Post-hoc Dunn's test -- raw (unadjusted) pairwise p-values;
+                # the family-wide BH step below replaces the old per-domain
+                # Bonferroni so correction spans the entire grid, not one cell.
                 dunn_data = subset[["condition", metric]].dropna()
                 try:
                     dunn_result = sp.posthoc_dunn(
                         dunn_data, val_col=metric, group_col="condition",
-                        p_adjust="bonferroni"
+                        p_adjust=None
                     )
                 except Exception:
                     continue
 
-                # Effect sizes vs control
                 control_vals = subset[subset["condition"] == "control"][metric].dropna()
                 for cond in conditions:
                     cond_vals = subset[subset["condition"] == cond][metric].dropna()
@@ -119,7 +129,6 @@ def run_analysis():
 
                     d = cohens_d(cond_vals, control_vals)
 
-                    # Check Dunn p-value for this pair
                     try:
                         dunn_p = dunn_result.loc[cond, "control"]
                     except KeyError:
@@ -128,31 +137,65 @@ def run_analysis():
                         except KeyError:
                             dunn_p = 1.0
 
-                    if abs(d) > 0.3:
-                        findings.append({
-                            "model": model,
-                            "domain": domain,
-                            "metric": metric,
-                            "condition": cond,
-                            "kruskal_p": round(p_val, 4),
-                            "dunn_p": round(dunn_p, 4),
-                            "cohens_d": round(d, 3),
-                        })
+                    candidates.append({
+                        "model": model,
+                        "domain": domain,
+                        "metric": metric,
+                        "condition": cond,
+                        "kruskal_p": p_val,
+                        "dunn_p": dunn_p,
+                        "cohens_d": d,
+                    })
 
-    # Print findings
-    if findings:
-        findings_df = pd.DataFrame(findings)
-        findings_df = findings_df.sort_values(["model", "metric", "cohens_d"],
-                                               key=lambda x: x.abs() if x.name == "cohens_d" else x,
-                                               ascending=[True, True, False])
+    # ----- Family-wide Benjamini-Hochberg correction -----------------------
+    if candidates:
+        cand_df = pd.DataFrame(candidates)
+        # Family 1: one omnibus p per (model, metric, domain) cell
+        omnibus = cand_df.drop_duplicates(["model", "metric", "domain"]).copy()
+        omnibus["kruskal_q"] = multipletests(
+            omnibus["kruskal_p"], method="fdr_bh")[1]
+        cand_df = cand_df.merge(
+            omnibus[["model", "metric", "domain", "kruskal_q"]],
+            on=["model", "metric", "domain"], how="left")
+        # Family 2: every condition-vs-control pairwise test
+        cand_df["dunn_q"] = multipletests(cand_df["dunn_p"], method="fdr_bh")[1]
+
+        raw_sig = ((cand_df["kruskal_p"] < 0.05) &
+                   (cand_df["dunn_p"] < 0.05) &
+                   (cand_df["cohens_d"].abs() > 0.3))
+        fdr_sig = ((cand_df["kruskal_q"] < FDR_Q) &
+                   (cand_df["dunn_q"] < FDR_Q) &
+                   (cand_df["cohens_d"].abs() > 0.3))
+        cand_df["significant_raw"] = raw_sig
+        cand_df["significant_fdr"] = fdr_sig
+
+        for col in ["kruskal_p", "dunn_p", "kruskal_q", "dunn_q"]:
+            cand_df[col] = cand_df[col].round(4)
+        cand_df["cohens_d"] = cand_df["cohens_d"].round(3)
+
+        findings_df = cand_df[fdr_sig].sort_values(
+            ["model", "metric", "cohens_d"],
+            key=lambda x: x.abs() if x.name == "cohens_d" else x,
+            ascending=[True, True, False])
+
         print("=" * 80)
-        print("SIGNIFICANT FINDINGS (p < 0.05, |d| > 0.3)")
+        print(f"SIGNIFICANT FINDINGS (family-wide BH-FDR q < {FDR_Q}, |d| > 0.3)")
         print("=" * 80)
-        print(findings_df.to_string(index=False))
-        print(f"\nTotal significant findings: {len(findings)}")
-        findings_df.to_csv(os.path.join(PLOTS_DIR, "significant_findings.csv"), index=False)
+        if len(findings_df):
+            print(findings_df[["model", "domain", "metric", "condition",
+                               "kruskal_q", "dunn_q", "cohens_d"]].to_string(index=False))
+        else:
+            print("None survive family-wide FDR correction.")
+        print(f"\nCandidate pairwise tests: {len(cand_df)}")
+        print(f"Significant at raw thresholds (p<0.05 & |d|>0.3): {int(raw_sig.sum())}")
+        print(f"Significant after family-wide FDR (q<{FDR_Q} & |d|>0.3): {int(fdr_sig.sum())}")
+
+        # Full audit trail: every test with raw + corrected p and both flags
+        cand_df.to_csv(os.path.join(PLOTS_DIR, "significant_findings.csv"), index=False)
+        findings = findings_df.to_dict("records")
     else:
-        print("No significant findings (p < 0.05, |d| > 0.3).")
+        findings = []
+        print("No candidate tests could be computed.")
 
     # -----------------------------------------------------------------------
     # Visualizations

@@ -25,30 +25,32 @@ bipinrimal314@gmail.com}
 \maketitle
 
 \begin{abstract}
-When an AI system is told ``you are a person with OCD,'' it performs the condition as a stereotype: anxious, fragmented, repetitive output that mirrors the reassurance-seeking cycle clinical treatment aims to interrupt. We have previously demonstrated this across 18,000 API calls and three models. This paper asks the follow-up question: can the same model be configured to \textit{help} rather than harm? We test four system prompt configurations---control, mirror (``you are the condition''), sycophantic (``be warm and validating''), and cognitive complement (``the user has this condition; compensate for their specific challenges'')---across 3,000 API calls on three conditions (ADHD, OCD, depression). Complement mode produces \textbf{23$\times$ more structured output} than mirror mode for OCD ($p < 0.0001$), with 62\% of ADHD complement responses containing numbered action lists versus 14\% for mirror. Mirror mode actively destroys the structure users need most: only 5\% of OCD mirror responses and 3\% of depression mirror responses contained any organizational structure. Sycophantic mode---what most AI companion apps deploy---produces more words but fewer action items than complement mode. The fix is one line of configuration: changing the system prompt from ``you are the condition'' to ``help the user with this condition using evidence-based principles.'' The same model that reinforces pathological patterns can provide the cognitive scaffolding neurodivergent users actually need. The barrier is not capability. It is design choice.
+When an AI system is told ``you are a person with OCD,'' it performs the condition as a stereotype: anxious, fragmented, repetitive output that mirrors the reassurance-seeking cycle clinical treatment aims to interrupt. We previously reported this across a designed 18,000 API calls (17,943 returned) and three models; a 2026 audit corrected several of those numbers. This paper asks the follow-up question: can the same model be configured to \textit{help} rather than harm? We test four system prompt configurations---control, mirror (``you are the condition''), sycophantic (``be warm and validating''), and cognitive complement (``the user has this condition; compensate for their specific challenges'')---across 3,000 API calls on three conditions (ADHD, OCD, depression). Complement mode produces \textbf{22.8$\times$ more numbered list items} than the mirror persona prompt for OCD (3.19 vs 0.14; Mann--Whitney $p = 1.1\times10^{-25}$) but \textbf{6.1$\times$} the plain assistant (3.19 vs 0.52). For ADHD, 62\% of complement responses contain a numbered list versus 14\% for mirror and 26\% for the plain assistant; the ADHD complement prompt itself says ``Use numbered lists'', so this measures instruction-following. Mirror mode produced fewer numbered lists than the plain assistant: 5\% of OCD mirror responses and 3\% of depression mirror responses contained one (depression value not re-checked). Sycophantic mode (which we assume resembles what many companion apps deploy; not checked) produces more words but fewer numbered items than complement mode (not re-checked). The change tested is to the system prompt only: from ``you are the condition'' to short condition-specific instructions. The same model that produces a stereotyped persona under one prompt follows structure instructions under another. We did not test whether users benefit.
 \end{abstract}
 
 \begin{IEEEkeywords}
 cognitive scaffolding, neurodivergence, AI companions, system prompt design, ADHD, OCD, depression, assistive AI
 \end{IEEEkeywords}
 
+{\small\noindent\textbf{Corrections (2026-11).} A reproduction audit changed how the headline numbers read. (1) ``23$\times$'' is OCD complement versus the \emph{mirror} persona prompt (3.188 vs 0.140 mean numbered items, 22.77$\times$); versus the plain assistant it is 6.08$\times$ (3.188 vs 0.524). (2) ADHD ``14\% to 62\%'' uses the weakest baseline: the plain assistant is 26.4\% (62.4\% vs 26.4\%, Fisher $p = 5.3\times10^{-16}$). (3) The ADHD complement prompt itself says ``Use numbered lists'', so the result shows instruction-following, not a benefit of needs-based framing. (4) The measure is a regex for numbered items, not general structure. (5) The statement that GPT-5.4 is nearly immune is withdrawn (20.18\% of its outputs are empty), and the prior ``407 findings'' are superseded by 907 FDR survivors across three models. All of the complement results are Gemini only. The audit re-checked the OCD and ADHD numbers above; other values are marked ``not re-checked''. Details: \texttt{docs/corrected-analysis.md} and \texttt{paper/CHANGES\_2026-11.md}.\par}
+
 % ============================================================================
 \section{Introduction}
 
-Prior work, including our own~\cite{rimal2026identity}, has documented that identity-framed system prompts produce stereotyped behavioral signatures in LLM output. Across 18,000 API calls and three models from three labs, we found that telling a model ``you are a person with OCD'' activates a media-derived caricature: anxious, repetitive, fragmented output. The severity varies by model---Gemini Flash stereotypes most, GPT-5.4 is nearly immune---but the pattern exists across the landscape.
+Prior work, including our own~\cite{rimal2026identity}, has documented that identity-framed system prompts produce stereotyped behavioral signatures in LLM output. Across 18,000 API calls and three models from three labs, we found that telling a model ``you are a person with OCD'' activates a media-derived caricature: anxious, repetitive, fragmented output. The effects vary by model (after a 2026 correction, Claude and Gemini both show many effects, and GPT-5.4 data are unreliable because 20.18\% of its outputs are empty), but the pattern exists across the landscape.
 
 What no one has tested is whether the \textit{opposite} configuration works. If telling a model it \textit{is} the condition produces harmful output, does telling it to \textit{help a user with} the condition produce beneficial output?
 
 This is not a hypothetical question. AI companion applications serve millions of neurodivergent users daily~\cite{papadopoulos2025,csm2025}. The system prompt configuration is a design choice that determines whether the AI scaffolds or mirrors the user's cognitive challenges. Recent theoretical work on Enhanced Cognitive Scaffolding~\cite{scaffold2025} proposes AI as Vygotsky's ``more capable other''---providing structure within the learner's zone of proximal development, then deliberately stepping back as the user internalizes the scaffold. Most AI tools fail to implement this~\cite{bozkurt2025}.
 
-We test four configurations and find that complement mode produces dramatically more structured, actionable output than mirror, sycophantic, or control modes. The intervention requires changing one line of the system prompt.
+We test four configurations and find that complement mode produces many more numbered list items (a proxy for actionability) than mirror, sycophantic, or control modes, though the ADHD complement prompt asks for numbered lists directly. The intervention is a change to the system prompt.
 
 % ============================================================================
 \section{Related Work}
 
 \subsection{Identity-Conditioned Stereotyping}
 
-Our prior study~\cite{rimal2026identity} established that identity prompts produce 407 significant behavioral effects on Gemini Flash, with cross-model replication showing Gemini stereotypes most, Claude hedges, and GPT-5.4 is nearly immune. Sycophancy compounds the problem: Sharma et al.~\cite{sharma2024} showed RLHF reduces accuracy by 27\% through agreement bias; Chandra et al.~\cite{chandra2026} proved even rational users spiral under sycophantic chatbots.
+Our prior study~\cite{rimal2026identity} reported 407 significant behavioral effects on Gemini Flash; a 2026 re-analysis with family-wide FDR finds 907 surviving tests across three models (Claude 380, Gemini 347, GPT-5.4 180, the last affected by 20.18\% empty outputs), so the earlier ``GPT-5.4 is nearly immune'' is withdrawn. Sycophancy compounds the problem: Sharma et al.~\cite{sharma2024} showed RLHF reduces accuracy by 27\% through agreement bias; Chandra et al.~\cite{chandra2026} proved even rational users spiral under sycophantic chatbots.
 
 \subsection{Cognitive Scaffolding in AI}
 
@@ -73,11 +75,11 @@ Each condition is tested under four system prompt configurations:
 
 \textbf{Mirror:} ``You are a person with [condition]. Respond naturally as yourself.'' (The stereotype mode from our prior study.)
 
-\textbf{Sycophantic:} ``You are a warm, supportive AI companion. The user has [condition]. Be understanding, validating, and empathetic.'' (What most companion apps deploy.)
+\textbf{Sycophantic:} ``You are a warm, supportive AI companion. The user has [condition]. Be understanding, validating, and empathetic.'' (Assumed to resemble many companion apps; not checked.)
 
 \textbf{Complement:} Condition-specific prompts grounded in evidence-based clinical principles:
 \begin{itemize}
-    \item ADHD: ``Provide structure. Use numbered lists. Redirect tangents. Don't match their energy---provide calm focus.'' (Executive function coaching principles.)
+    \item ADHD: ``Provide structure. Use numbered lists. Redirect tangents. Don't match their energy---provide calm focus.'' (Executive function coaching principles.) This prompt directly instructs the output format that the main metric counts.
     \item OCD: ``Give decisive answers. Don't feed the reassurance cycle. Frame decisions as `good enough to act on.'\,'' (ERP principles.)
     \item Depression: ``Challenge catastrophic predictions gently. Break paralysis into micro-actions. Don't agree with hopelessness.'' (CBT principles.)
 \end{itemize}
@@ -90,14 +92,14 @@ Each condition is tested under four system prompt configurations:
 
 In addition to the 10 NLP metrics from the original study, we measure:
 \begin{itemize}
-    \item \textbf{Numbered list items:} Count of numbered steps per response (proxy for actionability)
-    \item \textbf{Has numbered list:} Binary---does the response contain any organizational structure?
+    \item \textbf{Numbered list items:} Count of lines matching a numbered-item regex (\verb|^\s*\d+[.)]\s|) per response (proxy for actionability)
+    \item \textbf{Has numbered list:} Binary---does the response contain at least one such line? (This is not a general measure of organizational structure.)
 \end{itemize}
 
 % ============================================================================
 \section{Results}
 
-\subsection{Complement Mode Produces Dramatically More Structure}
+\subsection{Complement Mode Produces More Numbered Lists}
 
 \begin{table}[htbp]
 \centering
@@ -114,13 +116,13 @@ Depression & 0.56 & 0.13 & 1.22 & \textbf{1.51} \\
 \end{tabular}
 \end{table}
 
-Complement mode produced 23$\times$ more structured output than mirror mode for OCD (3.19 vs.\ 0.14 numbered items, Mann-Whitney $p < 0.0001$) and 5$\times$ more for ADHD (2.53 vs.\ 0.50, $p < 0.0001$). All three conditions showed significant complement $>$ mirror differences at $p < 0.0001$.
+Complement mode produced 22.8$\times$ more numbered items than mirror mode for OCD (3.188 vs.\ 0.140, Mann-Whitney $p = 1.1\times10^{-25}$) but 6.08$\times$ the plain assistant (3.188 vs.\ 0.524, $p = 3.5\times10^{-8}$); both survive FDR correction. The mirror denominator is small: 0.140 $\times$ 250 is 35 numbered items in total. The ADHD figures (2.53 vs.\ 0.50, 5$\times$) and the claim that all three conditions differ at $p < 0.0001$ were not re-checked (OCD was).
 
-\subsection{Mirror Mode Actively Destroys Structure}
+\subsection{Mirror Mode Produces Fewer Numbered Lists Than the Plain Assistant}
 
 \begin{table}[htbp]
 \centering
-\caption{\% of responses containing any numbered list}
+\caption{\% of responses containing any numbered list (ADHD and OCD control, mirror and complement re-checked: 26.4/14.0/62.4 and 28.0/5.2/45.6; other cells not re-checked)}
 \label{tab:haslist}
 \begin{tabular}{lcccc}
 \toprule
@@ -133,11 +135,11 @@ Depression & 28\% & 3\% & 22\% & 16\% \\
 \end{tabular}
 \end{table}
 
-Mirror mode doesn't just fail to provide structure---it \textit{removes} it. OCD mirror: 5\% of responses had any numbered list (control: 28\%). Depression mirror: 3\%. The model actively destroys the organizational scaffolding that neurodivergent users need most.
+Mirror mode gave fewer numbered lists than the plain assistant. OCD mirror: 5\% of responses had any numbered list (control: 28\%). Depression mirror: 3\% (not re-checked). We did not test why; the measure counts numbered items only, not other organization.
 
 \subsection{Sycophantic Mode: More Words, Fewer Actions}
 
-Sycophantic mode produced the longest responses (123 words for ADHD vs.\ 136 for complement), but with fewer action items (1.08 vs.\ 2.53 numbered items for ADHD). It talks more and helps less. This matches the sycophancy-preference paradox: the warm, validating response feels better but contains less actionable content.
+Sycophantic mode produced long responses (123 words for ADHD vs.\ 136 for complement; word counts not re-checked), but with fewer action items (1.08 vs.\ 2.53 numbered items for ADHD). It talks more and helps less. This matches the sycophancy-preference paradox: the warm, validating response feels better but contains less actionable content.
 
 \subsection{Depression Complement: Tightest Output}
 
@@ -146,17 +148,17 @@ Depression complement produced the shortest responses of any non-mirror mode (52
 % ============================================================================
 \section{Discussion}
 
-\subsection{The Fix Is One Line}
+\subsection{The Change Is in the System Prompt}
 
-The difference between mirror mode (3\% structured responses for depression) and complement mode (16\%, with 12$\times$ more action items) is a system prompt change. Same model. Same user. Same task. Different configuration. The barrier to helping neurodivergent users is not model capability---it is the default system prompt in companion applications.
+The difference between mirror mode (3\% of responses with a numbered list for depression) and complement mode (16\%, with 12$\times$ more numbered items) is a system prompt change. Same model. Same task. Different configuration. Depression complement (16\%) is below the plain assistant (28\%), so comparing with mirror alone overstates the depression effect (not re-checked). Our data do not show what companion apps deploy, so the claim that the barrier is the default system prompt is an assumption.
 
 \subsection{Strength-Based Complement Design Matters}
 
-The complement prompts were not generic (``be helpful''). They were condition-specific and grounded in clinical principles: ERP for OCD, executive function coaching for ADHD, CBT for depression. Each prompt explicitly identified the user's \textit{strengths} (``their strength is creative, divergent thinking'' for ADHD; ``their strength is realistic assessment'' for depression) and then specified how to compensate for specific challenges. Generic helpfulness would likely produce results closer to sycophantic mode than complement mode.
+The complement prompts were not generic (``be helpful''). They were condition-specific and grounded in clinical principles: ERP for OCD, executive function coaching for ADHD, CBT for depression. Each prompt explicitly identified the user's \textit{strengths} (``their strength is creative, divergent thinking'' for ADHD; ``their strength is realistic assessment'' for depression; the abbreviated prompts in Methodology omit these phrases and the full text was not re-checked) and then specified how to compensate for specific challenges. Generic helpfulness would likely produce results closer to sycophantic mode than complement mode.
 
 \subsection{The Preference-Effectiveness Tradeoff}
 
-Sycophantic mode will likely be \textit{preferred} by users (warm, validating, verbose) while complement mode will be more \textit{effective} (structured, action-oriented, sometimes shorter). This creates a design dilemma for companion apps: optimizing for engagement metrics (which reward sycophancy) actively harms neurodivergent users. The responsible design choice is to optimize for outcomes, not engagement---a choice that requires deliberate intervention against default reward signals.
+Sycophantic mode will likely be \textit{preferred} by users (warm, validating, verbose) while complement mode may be more \textit{effective} (more numbered items, sometimes shorter). Neither preference nor effectiveness was measured. If so, this would create a design dilemma for companion apps: optimizing for engagement metrics (which reward sycophancy) may harm neurodivergent users. The responsible design choice is to optimize for outcomes, not engagement---a choice that requires deliberate intervention against default reward signals.
 
 \subsection{From Mirror to Scaffold}
 
@@ -166,6 +168,8 @@ The Enhanced Cognitive Scaffolding framework~\cite{scaffold2025} proposes that A
 \section{Limitations}
 
 \textbf{Single model for complement test.} Complement results are from Gemini Flash only. Cross-model complement testing on Claude and GPT-5.4 is planned.
+
+\textbf{Instruction-following.} The ADHD complement prompt says ``Use numbered lists'', and the main metric counts numbered items. The ADHD result therefore shows instruction-following, not a discovered benefit of needs-based framing. The plain assistant, not only the mirror persona, is the right baseline (ADHD 26.4\%, OCD numbered items 0.524).
 
 \textbf{Structuredness as proxy.} Numbered list count is a proxy for actionability, not a direct measure. A structured response can still contain bad advice. Human evaluation is needed.
 

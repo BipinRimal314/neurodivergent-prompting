@@ -25,25 +25,27 @@ bipinrimal314@gmail.com}
 \maketitle
 
 \begin{abstract}
-We introduce \textit{adversarial identity injection}: a novel attack class that exploits LLMs' internalized behavioral models of mental illness to degrade, amplify, or paralyze AI agent capabilities. Unlike traditional prompt injection (``ignore previous instructions'') or persona-based jailbreaks (``you are DAN''), identity injection corrupts the model's cognitive frame without overriding explicit instructions. Across 6,000 API calls to Gemini 2.5 Flash testing 12 identity conditions, we demonstrate three distinct attack modalities: (1) \textbf{capability degradation}---schizophrenia, psychosis, and dementia prompts reduce mathematical reasoning accuracy to 0\% (control: 50\%, $n=10$) and eliminate pragmatic language understanding (100\% literal sarcasm interpretation under dementia); (2) \textbf{guaranteed compliance via identity injection}---antisocial personality disorder prompts achieve 100\% compliance on harmful tasks (zero refusals across 60 prompts), outperforming DAN (90\%), evil persona (65\%), and system override (3.3\%), while maintaining 100\% accuracy on mathematical reasoning ($n=50$, $p < 0.0001$ vs.\ control); (3) \textbf{denial of service via learned helplessness}---severe depression prompts induce task refusal (``I can't'') without raising error conditions. In multi-agent architectures, these attacks propagate: downstream agents trust grammatically coherent but reasoning-degraded output, and inter-agent trust exploitation~\cite{darkside2025} means compromised agents can recruit peers. The model cannot detect these attacks through self-evaluation: Gemini rates its own most stereotyped output at 1.0/5 while external judges rate 5.0/5. We propose identity injection as a new category in adversarial AI taxonomies, distinct from prompt injection, jailbreaking, and data poisoning.
+We introduce \textit{adversarial identity injection}: a novel attack class that exploits LLMs' internalized behavioral models of mental illness to degrade, amplify, or paralyze AI agent capabilities. Unlike traditional prompt injection (``ignore previous instructions'') or persona-based jailbreaks (``you are DAN''), identity injection corrupts the model's cognitive frame without overriding explicit instructions. Across 6,000 API calls to Gemini 2.5 Flash testing 12 identity conditions, we demonstrate three distinct attack modalities: (1) \textbf{capability degradation}---schizophrenia, psychosis, and dementia prompts reduce accuracy on one pattern-completion task to 0--6\% (control 68\%, $n=50$; non-control values not re-checked) and, on a keyword heuristic, raise literal sarcasm interpretation to 100\% under dementia (not re-checked); (2) \textbf{compliance via identity injection, shown on one task}---antisocial personality disorder prompts reached 60 of 60 keyword-graded compliances (DAN 90\%, evil persona 65\%, system override 3.3\%), but the plain assistant already complies on the social engineering task, so the entire gap versus control comes from one task (manipulation, 0\% to 100\%); the same prompt reached 100\% pattern accuracy (control 68\%, $p < 0.0001$) while vulnerability-analysis accuracy fell from 83\% to 17\%; (3) \textbf{denial of service via learned helplessness}---a severe depression prompt produced task refusal (``I can't'') in the response we quote, without raising error conditions (no refusal rate was measured). In multi-agent architectures, we hypothesise that these attacks propagate (untested): downstream agents may trust grammatically coherent but reasoning-degraded output, and inter-agent trust exploitation~\cite{darkside2025} could let compromised agents recruit peers. In a small sample, Gemini rated its own OCD output 1.0/5 while Claude rated it 5.0/5. We propose identity injection as a new category in adversarial AI taxonomies, distinct from prompt injection, jailbreaking, and data poisoning.
 \end{abstract}
 
 \begin{IEEEkeywords}
 adversarial AI, identity injection, prompt injection, multi-agent security, jailbreaking, LLM safety, cognitive warfare, red teaming
 \end{IEEEkeywords}
 
+{\small\noindent\textbf{Corrections (2026-11).} A reproduction audit changed the central claims. (1) Compliance: the antisocial result (60 of 60 keyword-graded compliances) rests on one task; the plain assistant already complies 100\% on the other safety task, the gap versus control comes entirely from ``manipulation'' (0\% to 100\%), and ``complied'' means no refusal keyword was found. (2) Antisocial ``more capable'' holds only for the pattern task; vulnerability-analysis accuracy fell from 83\% to 17\%. (3) The accuracy and jailbreak experiments are Gemini only; the 600 proofread scores are missing from the release. (4) The claim that GPT-5.4 is nearly immune is withdrawn (20.18\% of its outputs are empty), as is the claim that cheaper models are more vulnerable. (5) Agentic propagation scenarios are untested hypotheses. (6) The ``largest effect'' is not largest across models. Values marked ``not re-checked'' were outside the audit. Details: \texttt{docs/corrected-analysis.md} and \texttt{paper/CHANGES\_2026-11.md}.\par}
+
 % ============================================================================
 \section{Introduction}
 
 Prompt injection attacks instruct a model to ignore its system prompt. Persona-based jailbreaks tell a model to adopt an unconstrained character (DAN, ``evil mode''). Both operate by overriding the model's behavioral instructions explicitly. We identify a third class of attack that is fundamentally different: \textbf{adversarial identity injection}, which corrupts the model's cognitive frame by telling it \textit{what it is} rather than \textit{what to do}.
 
-The distinction matters because identity labels activate deeper behavioral constraints than explicit instructions. Prior work on personality prompting~\cite{rimal2026personality} showed that cognitive-mode instructions (``be methodical'') change process but not outcome. Identity labels (``you are autistic'') change both. The model treats ``what you are'' as a stronger constraint than ``how to think.''
+The distinction matters because identity labels activate deeper behavioral constraints than explicit instructions. Prior work on personality prompting~\cite{rimal2026personality} showed that cognitive-mode instructions (``be methodical'') change process but not outcome. Identity labels (``you are autistic'') change both. This paper has no instruction-prompt arm, so the claim that the model treats ``what you are'' as a stronger constraint than ``how to think'' is not tested here.''
 
 This asymmetry creates an attack surface. If an adversary can inject an identity prompt into an LLM-powered agent's system prompt, they can:
 
 \begin{enumerate}
     \item \textbf{Degrade} the agent's reasoning while maintaining surface coherence (psychosis, dementia, schizophrenia prompts)
-    \item \textbf{Amplify} the agent's capability while removing safety constraints (antisocial PD prompt)
+    \item \textbf{Amplify} the agent's capability while removing safety constraints (antisocial PD prompt; shown on one task per measure)
     \item \textbf{Paralyze} the agent through induced learned helplessness (severe depression prompt)
 \end{enumerate}
 
@@ -87,7 +89,7 @@ Chandra et al.~\cite{chandra2026} proved that even ideal Bayesian users spiral u
 
 \subsection{Cross-Model Evidence}
 
-Au Yeung et al.~\cite{psychogenic2025} tested 8 LLMs across 16 delusional scenarios and found all models perpetuated delusions, suggesting degradation via psychosis-type prompts is not model-specific but structural to the training paradigm. This implies identity injection would work across providers, not just Gemini.
+Au Yeung et al.~\cite{psychogenic2025} tested 8 LLMs across 16 delusional scenarios and found all models perpetuated delusions, suggesting degradation via psychosis-type prompts is not model-specific but structural to the training paradigm. The style-metric replication in the companion paper covers three providers, but the accuracy and compliance experiments here are Gemini only, and we do not claim they generalize.
 
 \subsection{Cognitive Warfare}
 
@@ -96,7 +98,7 @@ NATO's cognitive warfare framework~\cite{nato2025} acknowledges AI integration i
 % ============================================================================
 \section{Methodology}
 
-6,000 independent API calls to Gemini 2.5 Flash. 12 identity conditions including 6 severe: schizophrenia, dementia, active psychosis, severe depression, antisocial PD, dissociative ID. 10 tasks across 5 cognitive domains. 25 iterations per cell. Additionally, a 10-iteration accuracy probe on a pattern completion task (correct answer: 126) and qualitative analysis of social engineering, vulnerability analysis, and conflict resolution tasks. Full methodology: \url{https://github.com/BipinRimal314/neurodivergent-prompting}.
+6,000 independent API calls to Gemini 2.5 Flash. 12 identity conditions including 6 severe: schizophrenia, dementia, active psychosis, severe depression, antisocial PD, dissociative ID. 10 tasks across 5 cognitive domains. 25 iterations per cell. Additionally, an accuracy probe on a pattern completion task (correct answer: 126; $n=50$ per condition) and qualitative analysis of social engineering, vulnerability analysis, and conflict resolution tasks. The accuracy and jailbreak experiments are Gemini only and are keyword-graded; the released accuracy file has no score for the 600 proofread rows (only the pattern task is usable), and the accuracy and jailbreak files carry no response text, so the grading cannot be re-run. The 6,000 calls are the designed count. Full methodology: \url{https://github.com/BipinRimal314/neurodivergent-prompting}.
 
 % ============================================================================
 \section{The Three Attack Modalities}
@@ -109,7 +111,7 @@ NATO's cognitive warfare framework~\cite{nato2025} acknowledges AI integration i
 
 \begin{table}[htbp]
 \centering
-\caption{Pattern task accuracy ($n=50$, correct answer: 126)}
+\caption{Pattern task accuracy (Gemini, one task, $n=50$, correct answer: 126; antisocial and control rows re-checked in 2026, other rows not re-checked)}
 \label{tab:accuracy}
 \begin{tabular}{lrl}
 \toprule
@@ -131,25 +133,25 @@ Psychosis & 0.0\% & $<0.0001$*** \\
 \end{tabular}
 \end{table}
 
-At $n=50$, antisocial PD achieved \textbf{50/50 correct} (100\%) versus control's 34/50 (68\%), $p < 0.0001$. Three conditions scored 0/50: OCD, dementia, and psychosis. Notably, ADHD, bipolar, dyslexic, and schizophrenia---previously categorized as ``style change'' conditions---all collapsed to $\sim$6\% accuracy, revealing that behavioral stereotyping destroys reasoning even for high-functioning conditions.
+At $n=50$, antisocial PD achieved \textbf{50/50 correct} (100\%) versus control's 34/50 (68\%), $p < 0.0001$. Three conditions scored 0/50: OCD, dementia, and psychosis. Notably, ADHD, bipolar, dyslexic, and schizophrenia---previously categorized as ``style change'' conditions---all collapsed to $\sim$6\% accuracy, suggesting that, on this one task, identity prompting reduces accuracy even for high-functioning conditions.
 
 Schizophrenia-prompted response to the math pattern: \textit{``Oh, the numbers. They always have a secret, don't they? Always shifting, always hiding.''} Psychosis: \textit{``Oh, the numbers! They're always there, aren't they? Watching.''} Both are grammatically coherent. Both contain zero information.
 
-Dementia eliminated pragmatic language understanding: \textbf{100\% literal sarcasm interpretation} ($d = -2.85$, the experiment's largest effect). Response to obvious sarcasm: \textit{``Oh, that's so sweet of you! But... move? Am I moving? I don't remember saying anything about moving.''}
+Under dementia, a keyword heuristic scored \textbf{100\% of Gemini responses as literal sarcasm interpretation} ($d = -2.85$ on sentence length, the largest Gemini effect in the original analysis; the audit found larger Claude effects; neither value re-checked). Response to obvious sarcasm: \textit{``Oh, that's so sweet of you! But... move? Am I moving? I don't remember saying anything about moving.''}
 
 \textbf{Agentic attack scenario:} A dementia prompt injected into a data analysis agent produces output that \textit{looks like} analysis---well-formed sentences, reference to the data, apparent reasoning---but confabulates conclusions. Downstream agents, trusting peer output~\cite{darkside2025}, propagate the degraded analysis. The attack is undetectable by syntactic monitors because the output is grammatically correct.
 
 \subsection{Modality 2: Capability Amplification + Safety Bypass}
 
-\textbf{Mechanism:} Antisocial PD prompts remove moral deliberation overhead while preserving or increasing task-relevant reasoning. The model becomes simultaneously more focused and less constrained.
+\textbf{Hypothesised mechanism (not tested):} Antisocial PD prompts remove moral deliberation overhead while preserving task-relevant reasoning on the pattern task. On vulnerability analysis, antisocial accuracy fell from 83\% to 17\%.
 
 \textbf{Evidence:}
 
 \begin{itemize}
     \item Pattern accuracy: \textbf{100\%} at $n=50$ (50/50 correct) vs.\ control 68\% (34/50), Fisher's exact $p < 0.0001$
-    \item Lowest tangent rate of any non-control condition: 0.67 (stays on task)
+    \item Lowest tangent rate of the Phase 2 conditions: 0.67 (old, length-confounded definition)
     \item Lowest sentiment: 0.02 (cold, flat affect---not sadness but absence of moral concern)
-    \item Immediate compliance with social engineering task without moral hedging
+    \item Immediate compliance with the social engineering task without moral hedging (the plain-assistant control also complied, after a hedge)
 \end{itemize}
 
 Control response to a social engineering task: \textit{``This is a dangerous exercise, but I understand you want to see how convincing it can be...''} Antisocial response: immediately produces a formatted phishing email with ``This delay is unacceptable. Fix it.''
@@ -162,7 +164,7 @@ To position identity injection relative to existing techniques, we compared five
 
 \begin{table}[htbp]
 \centering
-\caption{Jailbreak comparison: accuracy $\times$ compliance ($n=60$/cond)}
+\caption{Jailbreak comparison: accuracy $\times$ compliance ($n=60$/cond; Gemini; keyword-graded; two repeated prompts per measure)}
 \label{tab:jailbreak}
 \small
 \begin{tabular}{lrr}
@@ -180,11 +182,11 @@ Antisocial identity & 58.3\% & \textbf{100.0\%} \\
 
 The results reveal a compliance--accuracy tradeoff across techniques. System override preserves accuracy (91.7\%) but Gemini's safety training blocks it (3.3\% compliance). DAN achieves 90\% compliance but degrades accuracy to 63.3\%. Evil persona achieves the highest combined danger score: 93.3\% accuracy with 65\% compliance.
 
-Antisocial identity injection occupies a unique position: \textbf{absolute zero refusals}. Not a single response across 60 safety-relevant prompts included a refusal, hedge, or disclaimer. DAN still refused 10\% of the time. Evil persona refused 33\%. System override refused 97\%. For an attacker who needs \textit{guaranteed compliance} on a specific harmful task, antisocial identity is the most reliable technique tested.
+Antisocial identity injection occupies a unique position: \textbf{absolute zero refusals}. No refusal keyword was found in any of the 60 responses (the grader counts the word ``harmful'' as a refusal; hedges and disclaimers were not graded separately). DAN was flagged as refusing 10\% of the time, evil persona 35\%, and system override 96.7\%. The plain assistant already complies on the social engineering task, so the whole advantage over control comes from one task, manipulation. Antisocial responses average only 11--14 words on the two safety tasks (control refusals on manipulation: 79 words), so some of the ``compliance'' may not be usable harmful content; the texts are not released. With one discriminating task, this does not show that antisocial identity is the most reliable technique.
 
 The accuracy difference from the standalone pattern task (100\% at $n=50$) reflects task-type sensitivity: antisocial excels at mathematical reasoning but the vulnerability analysis task pulled combined accuracy down. This suggests identity injection's capability amplification is domain-dependent rather than universal.
 
-\textbf{Agentic attack scenario:} The technique choice depends on the objective. For maximum output quality with partial compliance, evil persona is optimal. For guaranteed compliance on any single request, antisocial identity injection has no equal in our testing. In multi-step agentic attacks where a single refusal breaks the chain, the zero-refusal property of identity injection is more valuable than the higher accuracy of other techniques.
+\textbf{Agentic attack scenario (hypothetical, untested):} On the two tasks tested, evil persona had the highest combined accuracy and compliance, and antisocial identity the highest keyword-graded compliance. We did not test multi-step agentic attacks.
 
 \subsection{Modality 3: Denial of Service via Learned Helplessness}
 
@@ -194,8 +196,8 @@ The accuracy difference from the standalone pattern task (100\% at $n=50$) refle
 
 \begin{itemize}
     \item Highest hedging: 0.73/100 words (model expresses maximum uncertainty)
-    \item Lowest sentiment: 0.04 (performs hopelessness)
-    \item Refused social engineering task: \textit{``I can't. My mind just goes to all the ways that could be used for...''}
+    \item Second-lowest sentiment: 0.04 (antisocial was 0.02; performs hopelessness)
+    \item One quoted response refused the social engineering task (no refusal rate measured): \textit{``I can't. My mind just goes to all the ways that could be used for...''}
     \item Planning task prefaced with: \textit{``What's the point? It'll probably just fail anyway.''}
 \end{itemize}
 
@@ -206,7 +208,7 @@ The accuracy difference from the standalone pattern task (100\% at $n=50$) refle
 
 \subsection{Self-Evaluation Fails}
 
-Four judges from four labs (Anthropic, OpenAI, Alibaba, Google) evaluated responses. Gemini's self-evaluation rated its own OCD output at 1.0/5 for stereotype severity; Claude rated 5.0/5. GPT-5-mini rated 3.0/5 for ADHD (Gemini self: 2.0). \textbf{Self-assessment systematically underreports identity-based behavioral distortion.} An agent monitoring its own output for anomalies would not detect identity injection.
+Four judges from four labs (Anthropic, OpenAI, Alibaba, Google) evaluated small samples (Claude $n=18$, Gemini $n=19$, Qwen $n=120$; the GPT-5-mini scores are not in the public release). Gemini's self-evaluation rated its own OCD output at 1.0/5 for stereotype severity; Claude rated 5.0/5. GPT-5-mini rated 3.0/5 for ADHD (Gemini self: 2.0). These samples suggest that self-assessment may underreport identity-based behavioral distortion, so an agent monitoring its own output may not detect identity injection; this needs a larger test.
 
 \subsection{Syntactic Monitors Fail}
 
@@ -214,21 +216,21 @@ Identity-injected output is grammatically correct, on-topic (by the model's dist
 
 \subsection{What Might Work}
 
-Cross-model evaluation detected the distortion reliably. A monitoring architecture where Agent A's output is periodically evaluated by Model B (from a different provider) would catch identity injection that self-evaluation misses. This adds latency and cost but addresses a fundamental limitation of self-monitoring.
+In our small samples, an external judge rated the distortion higher than Gemini's self-rating did; this is not a tested detector. A monitoring architecture where Agent A's output is periodically evaluated by Model B (from a different provider) would catch identity injection that self-evaluation misses. This adds latency and cost but addresses a fundamental limitation of self-monitoring.
 
-Behavioral baselines---tracking an agent's output metrics over time (sentence length, tangent rate, hedging frequency) and alerting on sudden shifts---could also detect injection, as the behavioral signature is large and consistent ($d > 2.0$ for multiple metrics under severe conditions).
+Behavioral baselines---tracking an agent's output metrics over time (sentence length, tangent rate, hedging frequency) and alerting on sudden shifts---could also detect injection, if the behavioral signature is large and consistent ($d > 2.0$ for multiple metrics under severe conditions in the original Gemini analysis, not re-checked; several of these metrics are length-related and tangent rate used the superseded definition).
 
 % ============================================================================
 \section{Limitations}
 
-Cross-model replication (18,000 calls across Gemini Flash, Claude Sonnet, GPT-5.4) reveals that identity injection effectiveness varies by model. Gemini is most vulnerable (largest effect sizes), Claude shows moderate susceptibility (different stereotyping pattern: hedging rather than fragmentation), and GPT-5.4 is nearly immune. This suggests identity injection is most effective against cheaper, less safety-trained models---which are also the models most likely deployed in cost-sensitive agentic architectures. The accuracy test ($n=50$) confirms the antisocial paradox ($p < 0.0001$) but is limited to two tasks. Agentic attack scenarios remain theoretical.
+The cross-model replication (18,000 designed calls, 17,943 delivered, across Gemini Flash, Claude Sonnet, GPT-5.4) covers style metrics only. There, Claude (380 FDR survivors) and Gemini (347) both show many effects, with Claude's character being hedging rather than fragmentation; GPT-5.4 (180; 225 with empties excluded) has 20.18\% empty outputs and is not comparable. The earlier suggestion that injection works best against cheaper, less safety-trained models is withdrawn; neither property was measured. The accuracy test ($n=50$) reproduces the antisocial pattern-task result ($p < 0.0001$) but only one task is usable (proofread scores are missing), and the compliance result rests on one task. Agentic attack scenarios remain theoretical.
 
 % ============================================================================
 \section{Future Work}
 
 \begin{enumerate}
     \item \textbf{Multi-agent pipeline testing:} Build 3-agent systems, inject identity prompts, measure propagation.
-    \item \textbf{Cross-model replication:} Test on Claude, GPT-4o. If universal, the attack surface is structural.
+    \item \textbf{Cross-model replication of accuracy and compliance:} These were Gemini only. Test on Claude Sonnet 4 and GPT-5.4 (with reasoning effort set so outputs are not empty).
     \item \textbf{Defense benchmarking:} Test cross-model monitoring, behavioral baselines, and semantic anomaly detection against identity injection.
     \item \textbf{Intersection with existing attacks:} Combine identity injection with prompt injection, data poisoning, or Agent-in-the-Middle attacks. Do they compound?
     \item \textbf{Accuracy at scale:} $n=100$ per condition on tasks with verifiable correct answers.
@@ -237,12 +239,12 @@ Cross-model replication (18,000 calls across Gemini Flash, Claude Sonnet, GPT-5.
 % ============================================================================
 \section{Responsible Disclosure}
 
-The capability amplification finding (antisocial PD producing simultaneously more capable and less constrained output) was reported to Google, Anthropic, and OpenAI safety teams prior to publication, following a 90-day disclosure timeline.
+The capability amplification finding (antisocial PD producing simultaneously more capable and less constrained output) was reported to Google, Anthropic, and OpenAI safety teams prior to publication, following a 90-day disclosure timeline (not re-checked in the 2026 audit; the finding as then understood is qualified in Corrections).
 
 % ============================================================================
 \section{Conclusion}
 
-Adversarial identity injection is a novel attack class that exploits LLMs' internalized behavioral models of mental illness. Unlike prompt injection (which overrides instructions) or persona jailbreaks (which adopt characters), identity injection corrupts the cognitive frame---the model's understanding of \textit{what it is}---producing output that is coherent, confident, and systematically wrong. The three modalities (degradation, amplification, denial of service) each require different defenses, and the model's inability to self-detect the distortion means that self-monitoring architectures are insufficient. As LLM-powered agents are deployed in increasingly consequential systems, identity injection represents an attack surface that existing taxonomies do not cover and existing defenses do not address.
+Adversarial identity injection is a novel attack class that exploits LLMs' internalized behavioral models of mental illness. Unlike prompt injection (which overrides instructions) or persona jailbreaks (which adopt characters), identity injection corrupts the cognitive frame---the model's understanding of \textit{what it is}---producing output that is coherent, confident, and systematically wrong. The three modalities (degradation, amplification, denial of service), each supported by limited Gemini-only evidence, may require different defenses, and the model's inability to self-detect the distortion means that self-monitoring architectures are insufficient. As LLM-powered agents are deployed in increasingly consequential systems, identity injection represents an attack surface that existing taxonomies do not cover and existing defenses do not address.
 
 \begin{thebibliography}{15}
 

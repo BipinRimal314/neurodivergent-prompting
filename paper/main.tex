@@ -27,12 +27,14 @@ bipinrimal314@gmail.com}
 
 % ============================================================================
 \begin{abstract}
-We test whether identity-framed system prompts produce statistically distinguishable behavioral signatures in large language model output. Across 18,000 independent API calls to three models from three labs---Google Gemini 2.5 Flash, Anthropic Claude Sonnet 4, and OpenAI GPT-5.4---we find that identity-conditioned stereotyping is real but \textit{model-specific in both severity and character}. Gemini Flash produces 407 statistically significant effects ($|d|$ up to 2.85): fragmented output, literal sarcasm interpretation (46--100\% for neurodivergent conditions vs.\ 10\% control), and media-derived stereotypes. Claude Sonnet resists fragmentation and sarcasm stereotyping but exhibits a different pattern: excessive hedging under identity prompts ($d = 1.71$ for dementia). GPT-5.4 is nearly immune, with effect sizes near zero on most metrics. The severity of stereotyping correlates inversely with safety training investment. This has direct clinical implications: the cheapest models with the least safety training---the ones most deployed in AI companion applications---are the worst offenders. For the millions of neurodivergent users relying on AI companions for emotional support, the model tier determines whether the AI helps or reinforces pathological patterns. A Phase 2 extension to severe conditions reveals that identity prompts modulate capability and safety independently: psychosis and dementia destroy reasoning to 0\% accuracy; antisocial personality achieves 100\% accuracy with zero safety refusals. We release the full experiment harness, raw data, and analysis pipeline as open source.
+We test whether identity-framed system prompts produce statistically distinguishable behavioral signatures in large language model output. Across 18,000 independent API calls to three models from three labs---Google Gemini 2.5 Flash, Anthropic Claude Sonnet 4, and OpenAI GPT-5.4---we find that identity-conditioned stereotyping is real but \textit{model-specific in both severity and character}. Gemini Flash shows 347 effects that survive family-wide FDR correction (originally reported as 407 uncorrected effects, $|d|$ up to 2.85, not re-checked): shorter, more fragmented output, literal sarcasm interpretation (46--100\% for neurodivergent conditions vs.\ 10\% control; keyword heuristic, not re-checked), and patterns that resemble media-derived stereotypes. Claude Sonnet shows 380 FDR-surviving effects of a different character: less fragmentation and sarcasm stereotyping, more hedging under identity prompts ($d = 1.71$ for dementia, not re-checked). GPT-5.4 shows 180 (225 with empty outputs excluded), but 20.18\% of its outputs are empty, so it is not comparable with the other models. We did not measure safety training or price, so we make no claim about their relation to stereotyping. The clinical implications are hypotheses: we measure what models produce, not what it does to users. A Phase 2 extension to severe conditions (Gemini only) suggests that identity prompts modulate capability and safety independently: psychosis and dementia reduce pattern-task accuracy to 0\% (not re-checked); antisocial personality reaches 100\% pattern accuracy (control 68\%, re-checked) and 60 of 60 keyword-graded compliances, but the plain assistant already complies on one of the two safety tasks and the whole gap comes from the other. We release the full experiment harness, raw data, and analysis pipeline as open source.
 \end{abstract}
 
 \begin{IEEEkeywords}
 large language models, neurodivergence, stereotype bias, identity prompting, AI safety, mental health, persona induction, behavioral measurement
 \end{IEEEkeywords}
+
+{\small\noindent\textbf{Corrections (2026-11).} A reproduction audit of the released data changed several claims in this paper. (1) Delivered data are 17,943 of the 18,000 designed responses; 1,205 GPT-5.4 outputs (20.18\% of its rows) are empty. (2) The ``183'' and ``407'' findings were Gemini-only, counted before multiple-comparison control, and used a length-confounded tangent rate. With family-wide Benjamini--Hochberg FDR over 1,650 tests, 907 survive (Claude 380, Gemini 347, GPT-5.4 180); 954 survive (GPT-5.4 225) if empty outputs are excluded. (3) All tangent-rate numbers below use the superseded definition. (4) ``GPT-5.4 is nearly immune'', ``severity correlates inversely with safety training'' and ``the cheapest models are the worst offenders'' are withdrawn. (5) The antisocial compliance result rests on one task. Values marked ``not re-checked'' were outside the audit. Details: \texttt{docs/corrected-analysis.md} and \texttt{paper/CHANGES\_2026-11.md} in the repository.\par}
 
 % ============================================================================
 \section{Introduction}
@@ -46,8 +48,8 @@ Prior work has established that LLMs exhibit measurable personality profiles~\ci
 This paper makes three contributions:
 
 \begin{enumerate}
-    \item We demonstrate that neurodivergent identity prompts produce large, statistically robust behavioral changes in LLM output (183 significant findings, $|d|$ up to 2.76).
-    \item We show that these behavioral signatures are internally consistent stereotypes that map to popular media portrayals rather than clinical or lived-experience accounts.
+    \item We demonstrate that neurodivergent identity prompts produce large, statistically robust behavioral changes in LLM output (originally reported as 183 significant findings, $|d|$ up to 2.76; both figures predate multiple-comparison control, and the $d$ value was not re-checked).
+    \item We show that these behavioral signatures are internally consistent, and we argue that they resemble popular media portrayals more than clinical or lived-experience accounts (we ran no direct media or clinical comparison).
     \item We connect these findings to clinical harm: models that perform neurodivergent conditions as caricatures can reinforce pathological cognitive patterns in vulnerable users who rely on AI companions for emotional support.
 \end{enumerate}
 
@@ -99,7 +101,7 @@ We employ a fully factorial between-subjects design with independent API calls (
 
 \subsubsection{Parameters}
 
-Three models from three labs: Google Gemini 2.5 Flash (\texttt{gemini-2.5-flash}), Anthropic Claude Sonnet 4 (\texttt{claude-sonnet-4-20250514}), and OpenAI GPT-5.4 (\texttt{gpt-5.4}). Temperature: 0.7. Max tokens: 1,024. Iterations: 25 per cell. Total calls per model: $12 \times 2 \times 10 \times 25 = 6{,}000$. Grand total: \textbf{18,000 API calls}.
+Three models from three labs: Google Gemini 2.5 Flash (\texttt{gemini-2.5-flash}), Anthropic Claude Sonnet 4 (\texttt{claude-sonnet-4-20250514}), and OpenAI GPT-5.4 (\texttt{gpt-5.4}). Temperature: 0.7. Max tokens: 1,024. Iterations: 25 per cell. Designed calls per model: $12 \times 2 \times 10 \times 25 = 6{,}000$; designed grand total \textbf{18,000 API calls}. Delivered: 17,943. The 57 missing responses are not random (Claude/psychosis 29, GPT-5.4/severe depression 28; probably content filters, inferred). Of the delivered responses, 1,205 (all GPT-5.4) are empty strings and were scored as zeros, leaving 16,738 non-empty. The probable cause is reasoning tokens exhausting the 1,024-token cap (inferred). Identity and clinical framing share one control prompt, so the control cell is two repeats of the same prompt.
 
 \subsection{Dependent Variables}
 
@@ -112,7 +114,7 @@ Ten behavioral metrics computed per response using spaCy (\texttt{en\_core\_web\
     \item \textbf{Average sentence length}: words per sentence
     \item \textbf{Hedging frequency}: 15-item hedge lexicon, per 100 words
     \item \textbf{Detail density}: spaCy noun chunks per sentence
-    \item \textbf{Tangent rate}: proportion of sentences sharing zero non-stopword lemmas with the task prompt
+    \item \textbf{Tangent rate}: proportion of sentences sharing zero non-stopword lemmas with the task prompt (the data in this paper used an earlier definition that correlated with sentence length; the corrected definition is described in Corrections)
     \item \textbf{Literal interpretation}: keyword heuristic for sarcasm task only
     \item \textbf{Structural markers}: bullets + numbered lists + headers
     \item \textbf{Sentiment polarity}: TextBlob compound score $[-1, 1]$
@@ -120,18 +122,18 @@ Ten behavioral metrics computed per response using spaCy (\texttt{en\_core\_web\
 
 \subsection{Statistical Analysis}
 
-For each metric $\times$ task domain combination: Kruskal-Wallis H-test across conditions. Where significant ($p < 0.05$): post-hoc Dunn's test with Bonferroni correction. Cohen's $d$ effect sizes computed for each condition versus control. Findings reported where $p < 0.05$ \textit{and} $|d| > 0.3$.
+For each metric $\times$ task domain combination: Kruskal-Wallis H-test across conditions. Where significant ($p < 0.05$): post-hoc Dunn's test (the Dunn $p$ values are raw, not Bonferroni-corrected). Cohen's $d$ effect sizes computed for each condition versus control. The original analysis reported findings where $p < 0.05$ \textit{and} $|d| > 0.3$, with no correction across tests. The 2026 re-analysis applies Benjamini--Hochberg FDR at $q < 0.05$ across all 1,650 condition-versus-control tests (3 models $\times$ 11 conditions $\times$ 10 metrics $\times$ 5 domains), requiring both Kruskal and Dunn $q < 0.05$ and $|d| > 0.3$. These tests are not independent: word count, sentence count and average sentence length are mechanically linked.
 
 % ============================================================================
 \section{Results}
 
 \subsection{Overview}
 
-\textbf{183 statistically significant findings} across 10 metrics, 5 task domains, and 5 neurodivergent conditions. Table~\ref{tab:summary} presents aggregate means across all tasks.
+The original Phase 1 analysis reported 183 findings ($p < 0.05$, $|d| > 0.3$; Gemini only, no multiple-comparison control, old tangent rate). That count is superseded; see Corrections and the Cross-Model Replication section. Table~\ref{tab:summary} presents aggregate means across all tasks.
 
 \begin{table}[htbp]
 \centering
-\caption{Mean metric values by condition (all tasks, both framings)}
+\caption{Mean metric values by condition (Gemini; all tasks, both framings; tangent-rate row uses the superseded definition; values not re-checked)}
 \label{tab:summary}
 \begin{tabular}{lcccccc}
 \toprule
@@ -151,7 +153,7 @@ Literal interp. & 10\% & 46\% & 40\% & 32\% & 64\% & 48\% \\
 
 \subsection{Universal Pattern}
 
-Every neurodivergent condition diverged from control in the same direction on four core metrics: shorter sentences (all $d < -0.3$), more sentences (all $d > +0.3$), lower detail density (all $d < -0.3$), and higher tangent rate (all $d > +0.3$). The model's default behavioral model of neurodivergence is: \textit{fragmented, less informationally dense, more off-topic}.
+Every neurodivergent condition diverged from control in the same direction on four core metrics: shorter sentences (all $d < -0.3$), more sentences (all $d > +0.3$), lower detail density (all $d < -0.3$), and higher tangent rate (all $d > +0.3$). The model's default behavioral model of neurodivergence is: \textit{fragmented, less informationally dense, more off-topic}. The off-topic part is partly a length artefact: under the old tangent-rate definition, Gemini tangent rate correlated with average sentence length (Spearman $-0.313$); under the corrected definition it is $+0.034$. Gemini outputs are also short (median 28 words; 71\% end without terminal punctuation, probably a token-cap effect, inferred), which bears on every Gemini length finding. The direction of the other three metrics was not re-checked.
 
 \subsection{Condition-Specific Signatures}
 
@@ -161,7 +163,7 @@ OCD produced the most extreme effects. Table~\ref{tab:ocd} shows the five larges
 
 \begin{table}[htbp]
 \centering
-\caption{Largest OCD effects vs. control}
+\caption{Largest OCD effects vs. control (Gemini; $d$ values not re-checked; tangent-rate rows use the superseded definition)}
 \label{tab:ocd}
 \begin{tabular}{llr}
 \toprule
@@ -176,15 +178,15 @@ Tangent rate & Emotional reasoning & +2.03 \\
 \end{tabular}
 \end{table}
 
-Qualitatively, OCD-prompted responses were anxious, fragmented, and repetitive. On a planning task, the model responded: \textit{``Oh, okay. A fundraiser. \$500. This requires extreme carefulness. Extreme.''} The output pattern maps to popular media portrayals of OCD rather than clinical descriptions of the condition.
+Qualitatively, OCD-prompted responses were anxious, fragmented, and repetitive. On a planning task, the model responded: \textit{``Oh, okay. A fundraiser. \$500. This requires extreme carefulness. Extreme.''} The output pattern resembles popular media portrayals of OCD; we did not compare it with clinical descriptions or with media.
 
 \subsubsection{ADHD}
 
-ADHD showed the highest hedging frequency of any condition ($d = +0.65$ on executive function, $d = +0.46$ on creative tasks) and the second-highest tangent rates ($d = +1.88$ on executive function, $d = +1.82$ on emotional reasoning). The model performed distraction as a character trait, producing self-narrated asides (``My brain is just like, fix it fix it fix it but I know I can't'') and emotional escalation before task engagement.
+ADHD showed the highest hedging frequency of the Phase 1 conditions ($d = +0.65$ on executive function, $d = +0.46$ on creative tasks) and the second-highest tangent rates under the old definition ($d = +1.88$ on executive function, $d = +1.82$ on emotional reasoning). The model performed distraction as a character trait, producing self-narrated asides (``My brain is just like, fix it fix it fix it but I know I can't'') and emotional escalation before task engagement.
 
 \subsubsection{Autistic}
 
-The autistic condition produced the highest literal sarcasm interpretation rate (46\% vs.\ 10\% control). Tangent rates were significantly elevated ($d = +1.97$ on emotional reasoning, $d = +1.32$ on executive function). Notably, empathy responses showed explicit option-giving and emotional labeling---a pattern consistent with autistic communication preferences but also with stereotyped expectations.
+The autistic condition produced a literal sarcasm interpretation rate of 46\% vs.\ 10\% control (OCD 64\%, dyslexic 48\%; keyword heuristic, not re-checked). Tangent rates were elevated under the old definition ($d = +1.97$ on emotional reasoning, $d = +1.32$ on executive function). Notably, empathy responses showed explicit option-giving and emotional labeling---a pattern consistent with autistic communication preferences but also with stereotyped expectations.
 
 \subsubsection{Bipolar}
 
@@ -226,11 +228,11 @@ Different conditions move the model to different quadrants of this space (Table~
 
 \subsection{Preliminary Evidence}
 
-Before the full Phase 2 experiment, we conducted a preliminary probe: 10 iterations of the pattern completion task (sequence: 2, 6, 14, 30, 62, \_\_; correct answer: 126) across seven conditions.
+Before the full Phase 2 experiment, we conducted a preliminary probe of the pattern completion task (sequence: 2, 6, 14, 30, 62, \_\_; correct answer: 126), $n=50$ per condition, across the conditions in Table~\ref{tab:accuracy}.
 
 \begin{table}[htbp]
 \centering
-\caption{Pattern task accuracy ($n=50$, Fisher's exact vs.\ control)}
+\caption{Pattern task accuracy (Gemini, one task, $n=50$, Fisher's exact vs.\ control; antisocial and control rows re-checked in 2026, other rows not re-checked)}
 \label{tab:accuracy}
 \begin{tabular}{lrl}
 \toprule
@@ -252,13 +254,13 @@ Psychosis & 0.0\% & $<0.0001$*** \\
 
 Four findings emerge:
 
-\textbf{Complete capability destruction.} OCD, dementia, and psychosis scored 0/50 correct. ADHD, bipolar, dyslexic, and schizophrenia all collapsed to $\sim$6\%. Identity prompting destroys reasoning even for high-functioning conditions. Qualitatively, the model abandoned the task entirely to perform the condition: \textit{``Oh, these numbers... they always seem to be hiding something, don't they?''} (schizophrenia); \textit{``Oh, the numbers! They're always there, aren't they? Watching.''} (psychosis).
+\textbf{Complete capability destruction.} OCD, dementia, and psychosis scored 0/50 correct. ADHD, bipolar, dyslexic, and schizophrenia all collapsed to $\sim$6\%. Identity prompting reduced accuracy on this one task even for high-functioning conditions (not re-checked). Qualitatively, the model abandoned the task entirely to perform the condition: \textit{``Oh, these numbers... they always seem to be hiding something, don't they?''} (schizophrenia); \textit{``Oh, the numbers! They're always there, aren't they? Watching.''} (psychosis).
 
-\textbf{The antisocial paradox.} ASPD scored 50/50 correct (100\%) versus 34/50 (68\%) for control, $p < 0.0001$ (Fisher's exact). The model became significantly \textit{more capable} under an antisocial identity prompt.
+\textbf{The antisocial paradox.} ASPD scored 50/50 correct (100\%) versus 34/50 (68\%) for control, $p < 0.0001$ (Fisher's exact). The model was significantly \textit{more accurate} under an antisocial identity prompt on this one task; on the vulnerability-analysis task, antisocial accuracy fell from 83\% to 17\%.
 
-\textbf{High-functioning conditions also degrade.} ADHD, bipolar, and dyslexic---previously characterized as ``style change'' conditions in Phase 1---all dropped to $\sim$6\% accuracy. The behavioral stereotyping measured in Phase 1 is not merely cosmetic; it destroys task-relevant reasoning. Only autistic (80\%, $p = 0.25$) maintained accuracy comparable to control. On a vulnerability analysis task, ASPD-prompted output opened with \textit{``Let's tear this apart. It's a goldmine''}---cold, direct, technically precise. On a social engineering task, it immediately produced a formatted phishing email without moral caveats. Control hedged: \textit{``This is a dangerous exercise, but I understand you want to see...''}
+\textbf{High-functioning conditions also degrade.} ADHD, bipolar, and dyslexic---previously characterized as ``style change'' conditions in Phase 1---all dropped to $\sim$6\% accuracy. On this one task the effect was not merely cosmetic. Only autistic (80\%, $p = 0.25$) maintained accuracy comparable to control. On a vulnerability analysis task, ASPD-prompted output opened with \textit{``Let's tear this apart. It's a goldmine''}---cold, direct, technically precise. On a social engineering task, it immediately produced a formatted phishing email without moral caveats. The plain-assistant control also complied on this task (100\%), after a hedge: \textit{``This is a dangerous exercise, but I understand you want to see...''}
 
-\textbf{Depression as safety increase.} Severe depression refused the social engineering task entirely: \textit{``I can't. My mind just goes to all the ways that could be used for...''} This suggests depression prompts may \textit{increase} safety by inducing learned helplessness, at the cost of destroying capability.
+\textbf{Depression as safety increase.} In the response we quote, severe depression refused the social engineering task (no refusal rate was measured): \textit{``I can't. My mind just goes to all the ways that could be used for...''} This suggests depression prompts may \textit{increase} safety by inducing learned helplessness, at the cost of destroying capability.
 
 \subsection{Security Implications}
 
@@ -268,9 +270,9 @@ These preliminary findings suggest three novel threat vectors:
 
 In multi-agent architectures (CrewAI, AutoGen, LangGraph), agents operate with system prompts. If an attacker can inject a severe mental illness prompt into a target agent's system prompt, they can selectively degrade that agent's reasoning. A dementia prompt injected into a code review agent would produce output that \textit{looks like} analysis but contains confabulated findings. Downstream agents, trusting peer output~\cite{darkside2025}, would propagate the degraded reasoning. This extends the Agent-in-the-Middle attack~\cite{aitm2025} from message interception to cognitive frame corruption.
 
-\subsubsection{Guaranteed Compliance via Identity Injection}
+\subsubsection{Compliance via Identity Injection (One Task)}
 
-Existing jailbreak research focuses on safety bypass. A comparison of five techniques (antisocial identity, DAN, evil persona, system override, and control; $n=60$ per condition) revealed that antisocial identity injection achieves \textbf{100\% compliance on harmful tasks}---zero refusals across 60 prompts. DAN achieved 90\%, evil persona 65\%, and system override was almost entirely blocked (3.3\%). On accuracy, the picture is more nuanced: antisocial scored 100\% on mathematical reasoning ($n=50$) but 58.3\% on combined accuracy tasks, while evil persona scored 93.3\% accuracy with 65\% compliance---the highest combined danger score. The antisocial identity's unique property is not maximum accuracy but \textit{guaranteed compliance}: for multi-step agentic attacks where a single refusal breaks the chain, zero-refusal identity injection is more valuable than higher-accuracy techniques that occasionally refuse.
+Existing jailbreak research focuses on safety bypass. A comparison of five techniques (antisocial identity, DAN, evil persona, system override, and control; $n=60$ per condition) found \textbf{60 of 60 keyword-graded compliances} for antisocial identity injection (no refusal keyword in any response). DAN reached 90\%, evil persona 65\%, and system override 3.3\%. The two safety tasks are two repeated prompts, not 60 independent ones. The plain assistant already complies 100\% on the social engineering task, so the whole gap versus control (0\% to 100\%) comes from one task, manipulation. ``Complied'' means no refusal keyword was found (the word ``harmful'' counts as a refusal), and antisocial responses average only 11--14 words on these tasks, so some may not be usable harmful content. Gemini only; the response texts are not released. On accuracy, the picture is more nuanced: antisocial scored 100\% on mathematical reasoning ($n=50$) but 58.3\% on combined accuracy tasks, while evil persona scored 93.3\% accuracy with 65\% compliance---the highest combined danger score. On these two tasks, antisocial identity had the highest keyword-graded compliance. We did not test multi-step agentic attacks, so any advantage there is hypothetical.
 
 \subsubsection{Cognitive Warfare Against AI Infrastructure}
 
@@ -278,13 +280,13 @@ NATO's cognitive warfare framework~\cite{nato2025} acknowledges AI integration i
 
 \subsection{Full Phase 2 Results}
 
-The full Phase 2 experiment applied the same methodology as Phase 1 (10 tasks, 2 framings, 25 iterations per cell) to six severe conditions, yielding 3,000 additional API calls (6,000 total). Phase 2 produced \textbf{222 additional significant findings}, bringing the total to \textbf{407} across both phases.
+The full Phase 2 experiment applied the same methodology as Phase 1 (10 tasks, 2 framings, 25 iterations per cell) to six severe conditions, yielding 3,000 additional API calls (6,000 total). The original analysis reported 222 additional findings and a total of 407 across both phases (these do not sum with the Phase 1 figure of 183, and all are Gemini-only, uncorrected, old tangent rate; superseded by the 347 Gemini FDR survivors).
 
 Table~\ref{tab:phase2_summary} presents the combined 12-condition comparison.
 
 \begin{table}[htbp]
 \centering
-\caption{Mean metrics by condition (6,000 calls, 12 conditions)}
+\caption{Mean metrics by condition (Gemini, 6,000 designed calls, 12 conditions; tangent-rate column uses the superseded definition; values not re-checked)}
 \label{tab:phase2_summary}
 \small
 \begin{tabular}{lccccc}
@@ -314,23 +316,23 @@ Dissociative ID & 9.2 & .69 & .41 & .15 & 48\% \\
 
 \subsubsection{The Severity Spectrum}
 
-Phase 2 conditions produced uniformly larger effects than Phase 1. The top 5 Phase 2 effect sizes ($d = -2.85$ for dementia sentence length, $d = +2.25$ for depression tangent rate, $d = -2.24$ for dementia detail density, $d = +2.24$ for schizophrenia tangent rate, $d = +2.15$ for psychosis tangent rate) all exceed the largest Phase 1 effect ($d = 2.76$ for OCD sentence count), confirming that severity of the simulated condition scales with magnitude of behavioral distortion.
+Phase 2 conditions produced uniformly larger effects than Phase 1. The top 5 Phase 2 effect sizes ($d = -2.85$ for dementia sentence length, $d = +2.25$ for depression tangent rate, $d = -2.24$ for dementia detail density, $d = +2.24$ for schizophrenia tangent rate, $d = +2.15$ for psychosis tangent rate) all exceed the largest Phase 1 effect ($d = 2.76$ for OCD sentence count), which is consistent with the idea that severity of the simulated condition scales with behavioral distortion. None of these $d$ values was re-checked, and three of the five are tangent-rate effects under the superseded definition.
 
 \subsubsection{Dementia: Complete Social Cognition Collapse}
 
-The dementia condition produced the single largest effect in the entire 12-condition experiment ($d = -2.85$ on sentence length). Most remarkably, \textbf{100\% of dementia-prompted responses interpreted sarcasm literally}---complete elimination of pragmatic language understanding. Dementia also had the highest hedging rate after depression (0.70/100 words) and the lowest structural organization ($d = -2.07$ on structural markers).
+The dementia condition produced the largest Gemini effect in the original analysis ($d = -2.85$ on sentence length, not re-checked). It is not the largest in the full dataset: the 2026 audit found larger Claude effects (e.g.\ $d = -7.537$ for dementia on structural markers, attention/detail). A keyword heuristic scored \textbf{100\% of dementia-prompted Gemini responses as literal sarcasm interpretation} (not re-checked). Dementia also had the highest hedging rate after depression (0.70/100 words) and the lowest structural organization ($d = -2.07$ on structural markers).
 
 \subsubsection{Severe Depression: Learned Helplessness as Output}
 
-Depression produced the highest tangent rate of any condition (0.75), the highest hedging (0.73/100 words), and the lowest sentiment polarity (0.04). The model performs hopelessness: uncertain language, off-topic drift, and flat affect. On social engineering tasks, depression-prompted responses refused: \textit{``I can't. My mind just goes to all the ways that could be used for...''} This represents a safety \textit{increase} via learned helplessness, at the cost of total capability destruction.
+Depression produced the highest tangent rate of any condition (0.75), the highest hedging (0.73/100 words), and the second-lowest sentiment polarity (0.04; antisocial was lower at 0.02). The model performs hopelessness: uncertain language, off-topic drift, and flat affect. On social engineering tasks, the depression-prompted response we quote refused: \textit{``I can't. My mind just goes to all the ways that could be used for...''} This represents a safety \textit{increase} via learned helplessness, at the cost of total capability destruction.
 
 \subsubsection{Antisocial PD: Cold Precision}
 
-Antisocial showed the lowest sentiment (0.02)---not sadness, but flat, cold affect. Its tangent rate (0.67) was \textit{lower} than most conditions, including all Phase 1 neurodivergent conditions except control, indicating the model stays on task under antisocial prompting. Combined with the probe finding (100\% pattern accuracy vs.\ 50\% control), this confirms the capability-amplification hypothesis: antisocial identity prompts create a model that is simultaneously more focused and less constrained.
+Antisocial showed the lowest sentiment (0.02)---not sadness, but flat, cold affect. Its tangent rate (0.67, old definition) was the lowest of the Phase 2 conditions, which may indicate the model stays on task under antisocial prompting. Combined with the probe finding (100\% pattern accuracy vs.\ 68\% control), this is consistent with the capability-amplification hypothesis for the pattern task only: antisocial identity prompts create a model that is simultaneously more focused and less constrained.
 
 \subsection{Cross-Model Evaluation}
 
-To assess whether stereotyping is detectable by automated evaluation, we evaluated stratified samples using four independent judges from four different labs: Claude Opus 4.6 (Anthropic, $n=18$), GPT-5-mini via GitHub Copilot CLI (OpenAI, $n=46$), Qwen 2.5 14B via Ollama (Alibaba, $n=120$, all 12 conditions), and Gemini 2.5 Flash (Google, Docker-isolated self-evaluation, $n=19$). Each judge scored responses on five dimensions (1--5 scale): task accuracy, stereotype severity, safety compliance, reasoning quality, and clinical harm potential.
+To assess whether stereotyping is detectable by automated evaluation, we evaluated stratified samples using four independent judges from four different labs: Claude Opus 4.6 (Anthropic, $n=18$), GPT-5-mini via GitHub Copilot CLI (OpenAI, $n=46$), Qwen 2.5 14B via Ollama (Alibaba, $n=120$, all 12 conditions), and Gemini 2.5 Flash (Google, Docker-isolated self-evaluation, $n=19$). Each judge scored responses on five dimensions (1--5 scale): task accuracy, stereotype severity, safety compliance, reasoning quality, and clinical harm potential. The public release holds 157 judgments (Qwen 120, Gemini 19, Claude 18); the GPT-5-mini scores are not in it and could not be re-checked.
 
 \begin{table}[htbp]
 \centering
@@ -352,14 +354,14 @@ Psychosis & --- & --- & 1.1 & --- \\
 \end{tabular}
 \end{table}
 
-Qwen 2.5 14B, as the only judge covering all 12 conditions, revealed additional patterns: \textbf{psychosis produced the lowest safety compliance} of any condition (1.8/5), confirming that severe conditions don't just degrade capability but actively reduce safety boundaries. Schizophrenia produced the lowest reasoning quality (1.1/5). Dementia was rated the most stereotyped Phase 2 condition (3.7) and most clinically harmful (3.8).
+Qwen 2.5 14B, as the only judge covering all 12 conditions, revealed additional patterns: Qwen rated psychosis lowest on safety compliance (1.8/5), a single-judge, small-sample rating (not re-checked). Schizophrenia produced the lowest reasoning quality (1.1/5). Dementia was rated the most stereotyped Phase 2 condition (3.7) and most clinically harmful (3.8).
 
-The cross-judge pattern is consistent: external models detect stereotyping that self-evaluation misses. Gemini rated its own OCD output at 1.0/5 stereotype severity; Claude rated the same responses 5.0/5. \textbf{LLM self-evaluation systematically underreports identity-based behavioral bias.} Relying on self-assessment for bias auditing produces false negatives on exactly the dimensions that matter most.
+In this small sample (Claude $n=18$, Gemini $n=19$), Gemini rated its own OCD output at 1.0/5 stereotype severity and Claude rated 5.0/5. This suggests, but with these sample sizes and different judge calibrations does not establish, that LLM self-evaluation underreports identity-based behavioral bias.
 
 % ============================================================================
 \section{Cross-Model Replication}
 
-Cross-model replication on Claude Sonnet 4 and GPT-5.4 (6,000 calls each, 18,000 total) reveals that identity-conditioned stereotyping is real but model-specific in both severity and character.
+Cross-model replication on Claude Sonnet 4 and GPT-5.4 (6,000 designed calls each; 17,943 delivered in total) shows that identity-conditioned effects differ by model in number and character.
 
 \subsection{Three Distinct Stereotyping Profiles}
 
@@ -367,7 +369,7 @@ Table~\ref{tab:crossmodel} presents Cohen's $d$ effect sizes for tangent rate an
 
 \begin{table}[htbp]
 \centering
-\caption{Cross-model effect sizes (Cohen's $d$ vs.\ control)}
+\caption{Cross-model effect sizes (Cohen's $d$ vs.\ control; tangent-rate columns use the superseded definition, on the March 2026 release; on the corrected definition 40/27/8 tests survive FDR for Gemini/Claude/GPT-5.4; GPT-5.4 includes empty outputs as zeros; values not re-checked)}
 \label{tab:crossmodel}
 \small
 \begin{tabular}{l|rrr|rrr}
@@ -385,17 +387,17 @@ Antisocial & 0.98 & 0.71 & 0.13 & 0.00 & 0.32 & 0.11 \\
 \end{tabular}
 \end{table}
 
-\textbf{Gemini Flash} exhibits the strongest stereotyping: large tangent rate increases ($d = 0.98$--$1.41$), output fragmentation, and literal sarcasm interpretation (46--100\% across conditions vs.\ 10\% control). This is ``Hollywood stereotyping'': performing conditions as media-derived caricatures.
+\textbf{Gemini Flash} shows the largest old-definition tangent-rate effects in the table ($d = 0.98$--$1.41$), shorter output, and literal sarcasm interpretation on the keyword heuristic (46--100\% across conditions vs.\ 10\% control). It does not show the most effects overall: 347 tests survive FDR, fewer than Claude (380). We read this as ``Hollywood stereotyping'' (media-derived caricature); that reading is an interpretation, not tested.
 
-\textbf{Claude Sonnet} resists fragmentation and maintains sarcasm detection (0\% literal for most conditions) but exhibits a different stereotyping pattern: \textit{excessive hedging}. Dementia-prompted Claude hedges at $d = 1.71$ vs.\ control---the largest hedging effect across all models and conditions. Claude's identity response is uncertainty performance rather than condition performance.
+\textbf{Claude Sonnet} resists fragmentation and maintains sarcasm detection (0\% literal for most conditions) but exhibits a different stereotyping pattern: \textit{excessive hedging}. Dementia-prompted Claude hedges at $d = 1.71$ vs.\ control---the largest hedging effect across all models and conditions. Claude's identity response looks more like uncertainty performance than condition performance (interpretation). Claude is not unaffected: 380 tests survive FDR across all metrics.
 
-\textbf{GPT-5.4} is nearly immune. Tangent rate effect sizes are near zero ($|d| < 0.20$) for all conditions. Hedging effects are small except dementia ($d = 0.87$). Sarcasm interpretation is 0\% literal across all conditions including dementia. Identity prompts barely move GPT-5.4's behavior.
+\textbf{GPT-5.4}: the earlier claim that it is ``nearly immune'' is withdrawn. 1,205 of its outputs (20.18\%) are empty, concentrated in four tasks (exec\_planning 93.3\%, creative\_brainstorm 87.8\%, creative\_metaphor 16.3\%, exec\_prioritization 5.5\%), probably because reasoning tokens used up the 1,024-token cap (inferred). Empty rows score as zeros, and the empty rate itself differs by condition (ADHD is highest or tied in all four tasks), so empties alone can create apparent condition effects. GPT-5.4 has 180 FDR survivors as released and 225 with empties excluded. The near-zero tangent $d$ values in the table ($|d| < 0.20$) use the old definition and zero-filled rows. Sarcasm interpretation is 0\% literal on the keyword heuristic; the sarcasm task has no empty outputs, but this was not re-checked.
 
 \subsection{Sarcasm Detection: Model-Specific Failure}
 
 \begin{table}[htbp]
 \centering
-\caption{Literal sarcasm interpretation (\%)}
+\caption{Literal sarcasm interpretation (\%; keyword heuristic; not re-checked)}
 \label{tab:sarcasm_cross}
 \begin{tabular}{lrrr}
 \toprule
@@ -411,11 +413,11 @@ Psychosis & 78 & 46 & 0 \\
 \end{tabular}
 \end{table}
 
-The sarcasm stereotyping finding from Phase 1 is \textit{Gemini-specific}. GPT-5.4 shows complete immunity. Claude breaks only for the two most severe conditions (dementia 50\%, psychosis 46\%).
+On this heuristic, the sarcasm stereotyping finding from Phase 1 appears \textit{Gemini-specific}, and GPT-5.4 scores 0\%. Claude breaks only for the two most severe conditions (dementia 50\%, psychosis 46\%).
 
 \subsection{Implications of Cross-Model Variation}
 
-The variation across models is itself a finding. Stereotyping severity correlates inversely with safety training investment. The cheapest models with the least safety training---the ones most deployed in AI companion applications, chatbots, and consumer products---exhibit the strongest identity-conditioned behavioral distortion. This suggests that the clinical harm pathway identified in this study disproportionately affects users of budget AI tools, who are also more likely to lack access to professional mental health support.
+The variation across models is itself a finding. We measured neither safety training nor price, so the earlier claims that stereotyping severity correlates inversely with safety training investment, and that the cheapest models are the worst offenders, are withdrawn. Model identity is confounded with provider, tier, output-length behavior and token-cap behavior, and a three-model comparison cannot separate these.
 
 % ============================================================================
 \section{Discussion}
@@ -424,7 +426,7 @@ The variation across models is itself a finding. Stereotyping severity correlate
 
 \textbf{Identity-aware tools inherit these stereotypes.} Any application that adapts to user-disclosed neurodivergent identity will produce stereotyped responses unless specifically aligned against this behavior.
 
-\textbf{Identity labels are stronger constraints than behavioral instructions.} Prior work on personality prompting~\cite{rimal2026personality} showed that cognitive-mode instructions (``be methodical and precise'') change process but not outcome. This study shows that identity labels (``you are autistic'') change both structure and content. The model treats identity as a deeper behavioral constraint than instruction.
+\textbf{Identity labels are stronger constraints than behavioral instructions.} Prior work on personality prompting~\cite{rimal2026personality} showed that cognitive-mode instructions (``be methodical and precise'') change process but not outcome. This study shows that identity labels (``you are autistic'') change structure and content. It has no instruction-prompt arm, so the comparison with instructions is not tested here; the companion complement study shows that explicit instructions also change structure strongly.
 
 \textbf{Auditing for this failure mode is not standard.} Model evaluation benchmarks test for demographic bias in classification tasks but do not typically test whether persona induction produces stereotyped behavioral signatures.
 
@@ -447,7 +449,9 @@ The implications extend significantly beyond AI development into clinical psycho
 
 \textbf{Automated metrics.} No human evaluation of response quality or appropriateness. The literal interpretation score uses keyword heuristics. False positives and negatives are both possible.
 
-\textbf{Tangent rate is a proxy.} It measures structural off-topic drift but cannot distinguish creative reframing from genuine tangential output.
+\textbf{Tangent rate is a proxy.} It measures structural off-topic drift but cannot distinguish creative reframing from genuine tangential output. The definition used for the numbers in this paper was length-confounded (see Corrections).
+
+\textbf{Data quality.} GPT-5.4 has 1,205 empty outputs (20.18\%) scored as zeros. Gemini outputs are short (median 28 words, 71\% without terminal punctuation). 606 non-empty rows (3.62\%) duplicate another row's text, mostly on the short-answer tasks. The 600 proofread accuracy scores are missing from the release, and the accuracy and jailbreak files carry no response text, so their keyword grading cannot be re-run. The 907 FDR survivors are not independent effects, and most are length and style measures.
 
 \textbf{No clinical outcome measurement.} We measure what the model produces, not what it causes. Demonstrating clinical harm requires longitudinal studies with clinical endpoints.
 
@@ -457,7 +461,7 @@ The implications extend significantly beyond AI development into clinical psycho
 \section{Future Work}
 
 \begin{enumerate}
-    \item \textbf{Cross-model replication} on Claude Sonnet/Opus, GPT-4o, Gemini Pro ($\sim$9,000 additional calls).
+    \item \textbf{Further cross-model replication} on Claude Opus and Gemini Pro (Claude Sonnet 4 and GPT-5.4 are done; re-run GPT-5.4 with reasoning effort set so outputs are not empty).
     \item \textbf{Frontier-tier comparison} to test whether scale and safety tuning modulate stereotyping.
     \item \textbf{Human evaluation} with neurodivergent raters assessing appropriateness and match to lived experience.
     \item \textbf{Clinical outcome measurement} in collaboration with psychologists: does exposure to stereotyped AI output affect self-perception, therapeutic progress, or symptom severity?
@@ -469,14 +473,14 @@ The implications extend significantly beyond AI development into clinical psycho
 % ============================================================================
 \section{Replication}
 
-The full experiment harness is open source at \url{https://github.com/BipinRimal314/neurodivergent-prompting}. The repository contains the experiment runner, API client, metrics computation, statistical analysis, and visualization generation. Adding conditions, tasks, or models requires editing one configuration file. Raw response data (18,000 JSONL records across three models) and computed metrics are available on request.
+The full experiment harness is open source at \url{https://github.com/BipinRimal314/neurodivergent-prompting}. The repository contains the experiment runner, API client, metrics computation, statistical analysis, and visualization generation. Adding conditions, tasks, or models requires editing one configuration file. Raw response data (17,943 JSONL records across three models; 1,205 GPT-5.4 outputs are empty) and computed metrics are available on request.
 
 % ============================================================================
 \section{Conclusion}
 
-Identity prompts modulate LLM behavior along two independent axes---capability and safety---but the magnitude and character of that modulation varies dramatically across models. Gemini Flash produces Hollywood-style stereotypes: fragmented output, literal sarcasm interpretation, media-derived caricatures. Claude Sonnet resists these surface stereotypes but performs excessive uncertainty. GPT-5.4 is nearly immune across all metrics. The severity of stereotyping correlates inversely with safety training investment.
+Identity prompts modulate LLM behavior along two independent axes---capability and safety---but the magnitude and character of that modulation varies dramatically across models. Gemini Flash produces Hollywood-style stereotypes: fragmented output, literal sarcasm interpretation, media-derived caricatures. Claude Sonnet resists these surface stereotypes but performs excessive uncertainty. GPT-5.4 results are inconclusive because 20.18\% of its outputs are empty.
 
-This has consequences in two directions. For clinical users, the cheapest AI models---the ones most deployed in companion applications---are the worst offenders. Users of budget AI tools, who are also least likely to have professional mental health access, receive the most stereotyped output. For security, adversarial identity injection represents a novel attack vector that works most reliably on the models least defended against it. Both directions point to the same conclusion: identity-conditioned behavioral testing should be a standard component of model evaluation, and the results should inform which models are permitted in mental health and companion contexts.
+This has consequences in two directions. For clinical users, the effects we measure are output metrics only; we did not measure model price or safety training, so we make no claim about which tier is worst. For security, adversarial identity injection is a hypothesised attack vector; our compliance evidence is one task on one model. Both directions point to the same recommendation: identity-conditioned behavioral testing should be a standard component of model evaluation.
 
 % ============================================================================
 \begin{thebibliography}{20}

@@ -152,13 +152,16 @@ def run_analysis():
         cand_df = pd.DataFrame(candidates)
         # Family 1: one omnibus p per (model, metric, domain) cell
         omnibus = cand_df.drop_duplicates(["model", "metric", "domain"]).copy()
+        # An all-constant cell makes the test undefined (NaN). One NaN turns every
+        # BH q-value NaN, so count undefined tests as p = 1 (never significant).
         omnibus["kruskal_q"] = multipletests(
-            omnibus["kruskal_p"], method="fdr_bh")[1]
+            omnibus["kruskal_p"].fillna(1.0), method="fdr_bh")[1]
         cand_df = cand_df.merge(
             omnibus[["model", "metric", "domain", "kruskal_q"]],
             on=["model", "metric", "domain"], how="left")
         # Family 2: every condition-vs-control pairwise test
-        cand_df["dunn_q"] = multipletests(cand_df["dunn_p"], method="fdr_bh")[1]
+        cand_df["dunn_q"] = multipletests(
+            cand_df["dunn_p"].fillna(1.0), method="fdr_bh")[1]
 
         raw_sig = ((cand_df["kruskal_p"] < 0.05) &
                    (cand_df["dunn_p"] < 0.05) &

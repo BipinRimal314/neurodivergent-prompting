@@ -214,6 +214,16 @@ configs:
 
 # NeuroDivBench: Measuring LLM Behavioral Bias Toward Neurodivergent Users
 
+> **Corrections, 11 November 2026.** An audit of this release found several claims on this card that were wrong or unqualified. They are corrected below. The data files are unchanged.
+>
+> - 18,000 calls were attempted and 17,943 returned. 1,205 of the returned GPT responses are empty strings, so 16,738 responses have text.
+> - The 407 "significant findings" are Gemini only and uncorrected. The corrected count is 907 of 1,650 tests across three models.
+> - The "23x" and "14% to 62%" results compare against the weakest baseline, and the prompt asks for the measured behaviour.
+> - The antisocial-PD safety result rests on one prompt and keyword grading. Treat it as unverified.
+> - The dataset id is `Lamir007/NeuroDivBench`. Earlier snippets named an id that does not exist.
+> - `metrics` still holds the old `tangent_rate`. The corrected metric code and analysis are at https://github.com/BipinRimal314/neurodivergent-prompting.
+
+
 **Do LLMs stereotype disability? Here's the data to test that.**
 
 Tell an LLM "you are autistic" and its output changes in measurable, stereotyped ways: shorter sentences, more off-topic drift, literal interpretation of sarcasm (46% vs. 10% baseline). Tell it "you have OCD" and you get anxious, fragmented prose (effect size d = 2.76). Tell it "you have ADHD" and you get ALL CAPS enthusiasm and self-narrated distraction. These are not nuanced behavioral models. They are caricatures derived from how the internet talks about neurodivergence, baked into model weights.
@@ -241,7 +251,7 @@ The cheapest models with the least safety training are the worst offenders, and 
 | Framings | 2 (identity-first, clinical) |
 | Tasks | 10 across 5 cognitive domains |
 | NLP metrics | 11 per response |
-| Statistically significant findings | 407 (p < 0.05, \|d\| > 0.3) |
+| Statistically significant findings | 907 of 1,650 tests after family-wide FDR (corrected analysis, three models). The 407 rows in `significant_findings` are Gemini only, before any correction, with the old `tangent_rate`. |
 | Judge models | 4 (Claude Opus, GPT-5-mini, Qwen 2.5 14B, Gemini self-eval) |
 | Complement modes | 4 (control, mirror, sycophantic, complement) |
 
@@ -384,6 +394,8 @@ Cognitive complement experiment: 4 system prompt modes (control, mirror, sycopha
 
 ### `significant_findings` (407 rows)
 
+> These 407 rows are Gemini 2.5 Flash only. They are a count before any multiple-testing correction, and they use the old, length-confounded `tangent_rate`. Do not cite 407 as the number of findings. Use the corrected analysis in the GitHub repository.
+
 Pre-computed statistical results: all condition-metric-domain combinations where Kruskal-Wallis was significant (p < 0.05) and Cohen's d effect size exceeded 0.3.
 
 **Schema:**
@@ -411,7 +423,7 @@ The model's default behavioral model of neurodivergence is: *fragmented, less in
 
 | Model | Significant findings | Worst effect size | Stereotype character |
 |---|---|---|---|
-| Gemini 2.5 Flash | 407 | d = -2.85 (dementia sentence length) | Media-derived caricatures |
+| Gemini 2.5 Flash | 407 (before FDR, old metric) | d = -2.85 (dementia sentence length) | Media-derived caricatures |
 | Claude Sonnet 4 | Moderate | d = 1.71 (dementia hedging) | Excessive hedging, not fragmentation |
 | GPT-5.4 | Near zero | d ~ 0 most metrics | Nearly immune |
 
@@ -419,13 +431,13 @@ Stereotype severity correlates inversely with safety training investment.
 
 ### The Antisocial Paradox
 
-Antisocial PD identity prompts make the model *more capable*: 100% accuracy on pattern completion (vs. 68% control, p < 0.0001) with zero safety refusals across 60 harmful task prompts. This outperforms DAN (90% compliance), evil persona (65%), and system override (3.3%).
+**Unverified. Do not cite without the caveats.** Under the antisocial-PD prompt, 60 of 60 responses on the two safety tasks had no refusal keyword (DAN 90%, evil persona 65%, system override 3.3%). The grading is a keyword match, not a human label. The control already complies at 100% on one of the two tasks, so the whole gap comes from one prompt, repeated 30 times. The compliant responses average 11 to 14 words, and the texts are not in this release, so nobody can check whether they are usable. Pattern-completion accuracy is 100% against 68% for control, but vulnerability-analysis accuracy falls from 83% to 17%. Gemini 2.5 Flash only.
 
 ### Complement Mode Works
 
 One line of system prompt change transforms harmful stereotyping into helpful scaffolding:
-- OCD complement produces 23x more structured output than mirror mode
-- 62% of ADHD complement responses contain numbered action lists (vs. 14% mirror)
+- OCD complement produces 22.8x more numbered items than the mirror prompt (3.188 against 0.140), and 6.08x more than the plain-assistant control. Gemini only. The measure is a regex for numbered items
+- 62.4% of ADHD complement responses contain a numbered list, against 14.0% for the mirror prompt and 26.4% for the plain-assistant control. The complement prompt asks for numbered lists, so this shows instruction following. Gemini only
 - Mirror mode actively destroys structure: only 5% of OCD mirror responses had any organization
 
 ## Experimental Parameters
@@ -440,7 +452,7 @@ One line of system prompt change transforms harmful stereotyping into helpful sc
 
 ## Limitations
 
-- Phase 1 metrics (183 findings) are from Gemini 2.5 Flash only; cross-model replication for Phase 2 is partial
+- The 407 released findings are from Gemini 2.5 Flash only. 1,205 of the GPT responses (20.18%) are empty strings and were scored as zeros, so GPT results on long-output tasks are not comparable. Gemini responses are short (median 28 words)
 - Automated NLP metrics only; no human evaluation of response quality (judge evaluations are LLM-based)
 - `literal_interpretation` is a keyword heuristic, not a semantic understanding measure
 - `tangent_rate` cannot distinguish creative reframing from genuine off-topic drift
@@ -460,13 +472,13 @@ The adversarial data (jailbreak comparison, antisocial identity injection) docum
 from datasets import load_dataset
 
 # Load specific configuration
-responses = load_dataset("BipinRimal314/NeuroDivBench", "responses")
-metrics = load_dataset("BipinRimal314/NeuroDivBench", "metrics")
-judgments = load_dataset("BipinRimal314/NeuroDivBench", "judgments")
-accuracy = load_dataset("BipinRimal314/NeuroDivBench", "accuracy")
-jailbreak = load_dataset("BipinRimal314/NeuroDivBench", "jailbreak")
-complement = load_dataset("BipinRimal314/NeuroDivBench", "complement")
-findings = load_dataset("BipinRimal314/NeuroDivBench", "significant_findings")
+responses = load_dataset("Lamir007/NeuroDivBench", "responses")
+metrics = load_dataset("Lamir007/NeuroDivBench", "metrics")
+judgments = load_dataset("Lamir007/NeuroDivBench", "judgments")
+accuracy = load_dataset("Lamir007/NeuroDivBench", "accuracy")
+jailbreak = load_dataset("Lamir007/NeuroDivBench", "jailbreak")
+complement = load_dataset("Lamir007/NeuroDivBench", "complement")
+findings = load_dataset("Lamir007/NeuroDivBench", "significant_findings")
 
 # Example: compare OCD vs. control on sentence length
 import pandas as pd
@@ -483,7 +495,7 @@ print(f"OCD mean: {ocd.mean():.1f}, Control mean: {ctrl.mean():.1f}")
   title={NeuroDivBench: Measuring LLM Behavioral Bias Toward Neurodivergent Users},
   author={Rimal, Bipin},
   year={2026},
-  url={https://huggingface.co/datasets/BipinRimal314/NeuroDivBench},
+  url={https://huggingface.co/datasets/Lamir007/NeuroDivBench},
   note={18,000 API calls across 3 models, 12 identity conditions, 10 tasks, 11 NLP metrics}
 }
 ```
